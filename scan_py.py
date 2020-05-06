@@ -73,6 +73,7 @@ class scan:
         #cacher.deposit(data=self.ret_lst_raw,name=path,cacheTarget="twine_cache")
         #print(cacher.withdraw(name=path,cacheTarget="twine_cache"))
 
+    #internal function
     def scanner(self,path=None,cli_braker=False):
         self.curfPath = os.getcwd()
         self.working = True
