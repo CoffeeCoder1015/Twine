@@ -60,7 +60,7 @@ class scan:
         length = len(ags_lst)
         self.scan_threads = length
         for s in range(0,length):
-            ptpx.submit(self.scanner,path=ags_lst[s],cli_braker=False)
+            ptpx.submit(self.scanner,path=ags_lst[s])
 
         #wait for completion
         while self.scan_threads > 0:
@@ -74,7 +74,7 @@ class scan:
         #print(cacher.withdraw(name=path,cacheTarget="twine_cache"))
 
     #internal function
-    def scanner(self,path=None,cli_braker=False):
+    def scanner(self,path=None):
         self.curfPath = os.getcwd()
         self.working = True
         if path== "" or path==None or path==0:
@@ -128,15 +128,5 @@ class scan:
             for CurDir,Dir,Files in os.walk(path):
                     d_ss_thrs+=1
                     tpx.submit(dss,self,d_ss_thrs)
-
-        if cli_braker == True:
-            while True:
-                ltr = f"{self.comp_threads}/{d_ss_thrs+f_ss_thrs} completed".format()
-                print(self.working_threads,ltr)
-                if self.comp_threads == d_ss_thrs+f_ss_thrs:
-                    ltr = f"{self.comp_threads}/{d_ss_thrs+f_ss_thrs} completed".format()
-                    print(self.working_threads,ltr)
-                    print("----------------------")
-                    break
-        
+                    
         self.scan_threads-=1
