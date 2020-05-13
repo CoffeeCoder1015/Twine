@@ -6,7 +6,7 @@ import ATM
 from director import cd
 
 class scan:
-    def __init__ (self,Name='',matchMode='',searchType='',returnFormat=''):
+    def __init__ (self,Name='',matchMode='',searchType=''):
         self.Name = Name
         self.matchMode=matchMode
         
@@ -15,7 +15,6 @@ class scan:
             
         self.searchType=searchType.lower()
 
-        self.returnFormat=returnFormat.lower()
         self.ret_lst_raw = np.empty((0,3))         
 
     def mm_switch (self,string):

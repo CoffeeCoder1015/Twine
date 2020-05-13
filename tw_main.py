@@ -1,4 +1,4 @@
-import CoreTool
+from scan_py import scan
 
-SCAN = CoreTool.scan(Name='',matchMode='',searchType='',returnFormat='')
+SCAN = scan(Name='',matchMode='',searchType='',returnFormat='')
 SCAN.scan_mc(path="..")
