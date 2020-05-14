@@ -12,9 +12,7 @@ class scan:
         
         if matchMode == "l":
             self.Name=self.Name.lower()
-            
         self.searchType=searchType.lower()
-
         self.ret_lst_raw = np.empty((0,3))         
 
     def mm_switch (self,string):
@@ -62,15 +60,14 @@ class scan:
             ptpx.submit(self.scanner,path=ags_lst[s])
 
         #wait for completion
-        while self.scan_threads > 0:
-            print("Running Threads:",self.scan_threads,end="\r")
-
-        print("\n-----")
-        print(self.ret_lst_raw)
+        ptpx.shutdown(wait=True)
+        for i in self.ret_lst_raw:
+                print(i)
         #deposit cache
         #self.ret_lst_raw = str(self.ret_lst_raw.tolist()).replace("'","")
         #cacher.deposit(data=self.ret_lst_raw,name=path,cacheTarget="twine_cache")
         #print(cacher.withdraw(name=path,cacheTarget="twine_cache"))
+
 
     #internal function
     def scanner(self,path=None):
@@ -81,51 +78,34 @@ class scan:
         else:
             path = self.curfPath+"\\"+path
 
-        def dss(self,ID):
-            self.working_threads.append(["dss",ID])  
-
+        def dss(self):
             for D_nme in Dir:
                 D_nme = self.mm_switch(D_nme)
                 if self.Name in D_nme:
                     ad_obj = np.array([CurDir,D_nme,"folder"])
                     self.ret_lst_raw = np.append(self.ret_lst_raw,[ad_obj],axis=0)
 
-            self.comp_threads+=1
-            self.working_threads.remove(["dss",ID])
-
-        def fss(self,ID):         
-            self.working_threads.append(["fss",ID]) 
-
+        def fss(self):         
             for F_nme in Files:
                 F_nme = self.mm_switch(F_nme)
                 if self.Name in F_nme:
                     ad_obj = np.array([CurDir,F_nme,"file"])
                     self.ret_lst_raw = np.append(self.ret_lst_raw,[ad_obj],axis=0)
-            self.comp_threads+=1
-            self.working_threads.remove(["fss",ID])
 
 
         tpx = ThreadPoolExecutor(max_workers=8192)
-        d_ss_thrs = 0
-        f_ss_thrs = 0
-        self.comp_threads = 0
-        self.working_threads = []
 
         if self.searchType == '':
             for CurDir,Dir,Files in os.walk(path):
-                    d_ss_thrs+=1
-                    tpx.submit(dss,self,d_ss_thrs)
-                    f_ss_thrs+=1
-                    tpx.submit(fss,self,f_ss_thrs)
+                tpx.submit(dss,self)
+                tpx.submit(fss,self)
             
         if self.searchType == 'f':
             for CurDir,Dir,Files in os.walk(path):
-                    f_ss_thrs+=1
-                    tpx.submit(fss,self,f_ss_thrs)
-        
+                tpx.submit(fss,self)
+
         if self.searchType == 'd':
             for CurDir,Dir,Files in os.walk(path):
-                    d_ss_thrs+=1
-                    tpx.submit(dss,self,d_ss_thrs)
-                    
-        self.scan_threads-=1
+                tpx.submit(dss,self)
+
+        tpx.shutdown(wait=True)
