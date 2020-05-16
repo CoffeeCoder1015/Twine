@@ -4,6 +4,7 @@ import os
 import numpy as np
 import ATM
 from director import cd
+import time
 
 class scan:
     def __init__ (self,Name='',matchMode='',searchType=''):
@@ -13,12 +14,23 @@ class scan:
         if matchMode == "l":
             self.Name=self.Name.lower()
         self.searchType=searchType.lower()
-        self.ret_lst_raw = np.empty((0,3))         
+        self.rls = []    
+
+        #set execution cmd
+        self.ex_txt=""
+        if self.searchType == '':
+            self.ex_txt="""tpx.submit(dss,self)\ntpx.submit(fss,self)"""
+
+        if self.searchType == 'f':
+            self.ex_txt="tpx.submit(fss,self)"
+
+        if self.searchType == 'd':
+            self.ex_txt="tpx.submit(dss,self)"
 
     def mm_switch (self,string):
         if self.matchMode == "l":
             return string.lower()
-        else:
+        if self.matchMode == "":
             return string
 
     def scan_mc(self,path="."):
@@ -26,7 +38,7 @@ class scan:
             path = os.getcwd()
         
         #cache init
-        cacher = ATM.cache_machine(name="Twine",Type="b",start_pos=os.getcwd())
+        cacher = ATM.cache_machine(name="Twine",start_pos=os.getcwd())
 
         cd(path=path)
         path = os.getcwd()
@@ -42,29 +54,42 @@ class scan:
             ags_lst.remove(i)
 
         #un-touched folder&file appending
-        for i in range(0,len(ags_lst)):
-            if self.Name in self.mm_switch(ags_lst[i]):
-                ap_obj = [os.getcwd(),ags_lst[i],"folder"]
-                self.ret_lst_raw = np.append(self.ret_lst_raw,[ap_obj],axis=0)
+        #ALL
+        if self.searchType == "":
+            for i in range(0,len(ags_lst)):
+                if self.Name in self.mm_switch(ags_lst[i]):
+                    ap_obj = [os.getcwd(),ags_lst[i],"folder"]
+                    self.rls.append(ap_obj)
 
-        for i in range(0,len(files)):
-            if self.Name in self.mm_switch(files[i]):
-                ap_obj = [os.getcwd(),files[i],"file"]
-                self.ret_lst_raw = np.append(self.ret_lst_raw,[ap_obj],axis=0)
+            for i in range(0,len(files)):
+                if self.Name in self.mm_switch(files[i]):
+                    ap_obj = [os.getcwd(),files[i],"file"]
+                    self.rls.append(ap_obj)
+        #Directories
+        if self.searchType == 'd':
+            for i in range(0,len(ags_lst)):
+                if self.Name in self.mm_switch(ags_lst[i]):
+                    ap_obj = [os.getcwd(),ags_lst[i],"folder"]
+                    self.rls.append(ap_obj)
+        #Files
+        if self.searchType == 'f':
+            for i in range(0,len(files)):
+                if self.Name in self.mm_switch(files[i]):
+                    ap_obj = [os.getcwd(),files[i],"file"]
+                    self.rls.append(ap_obj)
 
         #scanner execution & processing organization
         ptpx = ThreadPoolExecutor(max_workers=8192)
         length = len(ags_lst)
-        self.scan_threads = length
         for s in range(0,length):
             ptpx.submit(self.scanner,path=ags_lst[s])
 
         #wait for completion
         ptpx.shutdown(wait=True)
-        for i in self.ret_lst_raw:
-                print(i)
+
         #deposit cache
-        #self.ret_lst_raw = str(self.ret_lst_raw.tolist()).replace("'","")
+        print(json.dumps(self.rls,indent=4))
+        #self.ret_lst_raw = str(self.ret_lst_raw.tolist()).replace("'","").replace("], [","]\n[")
         #cacher.deposit(data=self.ret_lst_raw,name=path,cacheTarget="twine_cache")
         #print(cacher.withdraw(name=path,cacheTarget="twine_cache"))
 
@@ -81,31 +106,21 @@ class scan:
         def dss(self):
             for D_nme in Dir:
                 D_nme = self.mm_switch(D_nme)
-                if self.Name in D_nme:
-                    ad_obj = np.array([CurDir,D_nme,"folder"])
-                    self.ret_lst_raw = np.append(self.ret_lst_raw,[ad_obj],axis=0)
+                if self.Name in D_nme or self.Name == "":
+                    ap_obj = [CurDir,D_nme,"folder"]
+                    self.rls.append(ap_obj)
 
         def fss(self):         
             for F_nme in Files:
                 F_nme = self.mm_switch(F_nme)
-                if self.Name in F_nme:
-                    ad_obj = np.array([CurDir,F_nme,"file"])
-                    self.ret_lst_raw = np.append(self.ret_lst_raw,[ad_obj],axis=0)
+                if self.Name in F_nme or self.Name == "":
+                    ap_obj = [CurDir,F_nme,"file"]
+                    self.rls.append(ap_obj)
 
 
         tpx = ThreadPoolExecutor(max_workers=8192)
 
-        if self.searchType == '':
-            for CurDir,Dir,Files in os.walk(path):
-                tpx.submit(dss,self)
-                tpx.submit(fss,self)
-            
-        if self.searchType == 'f':
-            for CurDir,Dir,Files in os.walk(path):
-                tpx.submit(fss,self)
-
-        if self.searchType == 'd':
-            for CurDir,Dir,Files in os.walk(path):
-                tpx.submit(dss,self)
+        for CurDir,Dir,Files in os.walk(path):
+            exec(self.ex_txt)
 
         tpx.shutdown(wait=True)

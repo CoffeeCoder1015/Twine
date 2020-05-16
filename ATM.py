@@ -2,9 +2,8 @@ import json
 import os
 
 class cache_machine:
-    def __init__(self,name,Type,start_pos):
+    def __init__(self,name,start_pos):
         self.start_pos = start_pos
-        self.type = Type
         self.cfn = "_config_atm_cacher.py.json"
         self.set_template = json.dumps({
             "path":f".\\cache_atm_{name}".format()
@@ -35,18 +34,15 @@ class cache_machine:
                 self.set_error_checker()
 
     #internal function
-    def cache_type_ckr(self):
-        if self.type == "b" and self.cacheTarget == None or self.cacheTarget == "":
-            raise Exception("""
------------------------
-supply cacheTarget argument with target file
-when 'Type' is set to 'b'
------------------------""")
-
-    #internal function
     def che_init(self):
         with open(self.cache_file,'w') as fIO:
             fIO.write("{\n}")
+
+    #internal function
+    def decode(self,raw_dat):
+        byte_dat = bytes.fromhex(raw_dat)
+        str_dat = str(byte_dat.decode('utf-8'))
+        return str_dat
 
     #internal function (error handeling)
     def type_b_cache_fixer(self,file):
@@ -64,13 +60,11 @@ when 'Type' is set to 'b'
             fIO.truncate(0)
             fIO.write(data)
             
-
-    def deposit(self,data,name,cacheTarget=None):
+    def deposit(self,data,name,cacheTarget):
         r"""The function overwrites data, please fetch previous data
         and add new data onto it if you want to append data
         """
         self.cacheTarget = cacheTarget
-        self.cache_type_ckr()
         data = list(bytes(data,'utf-8').hex())
         I= 1
         for i in range(0,len(data)):
@@ -79,52 +73,33 @@ when 'Type' is set to 'b'
                 I+=1
         
         data="".join(data)
-        if self.type == "f":
-            with open(self.PATH+"\\"+name+".atmc",'w')as fIO:
-                fIO.write(data)
-        
-        if self.type == "b":
-            self.cache_file = self.PATH+"\\"+cacheTarget+".json"
 
-            #error handeling
-            cft = os.path.isfile(self.cache_file)
-            if cft == False:
+        self.cache_file = self.PATH+"\\"+cacheTarget+".json"
+        #error handeling
+        cft = os.path.isfile(self.cache_file)
+        if cft == False:
+            self.che_init()
+        else:
+            fs = os.path.getsize(self.cache_file)
+            if fs == 0:
                 self.che_init()
-            else:
-                fs = os.path.getsize(self.cache_file)
-                if fs == 0:
-                    self.che_init()
+        self.type_b_cache_fixer(self.cache_file)
+        with open(self.cache_file,'r+') as fIO:
+            raw_dat = fIO.read()
+            cache_data = json.loads(raw_dat)
+            cache_data[name] = data.replace("\n","")
+            cache_data = json.dumps(cache_data,indent=4)
+            fIO.seek(0)
+            fIO.writelines(cache_data)
+        self.type_b_cache_fixer(self.cache_file)
 
+    def withdraw(self,name,cacheTarget):
+        self.cache_file = self.PATH+"\\"+cacheTarget+".json"
+        self.type_b_cache_fixer(self.cache_file)
+        with open(self.cache_file,'r+') as fIO:
+            raw_dat = fIO.read()
+            cache_data = json.loads(raw_dat)
+            return self.decode(cache_data[name])
 
-            self.type_b_cache_fixer(self.cache_file)
-
-            with open(self.cache_file,'r+') as fIO:
-                raw_dat = fIO.read()
-                cache_data = json.loads(raw_dat)
-                cache_data[name] = data.replace("\n","")
-                cache_data = json.dumps(cache_data,indent=4)
-                fIO.seek(0)
-                fIO.writelines(cache_data)
-
-            self.type_b_cache_fixer(self.cache_file)
-
-    #internal function
-    def decode(self,raw_dat):
-        byte_dat = bytes.fromhex(raw_dat)
-        str_dat = str(byte_dat.decode('utf-8'))
-        return str_dat
-
-    def withdraw(self,name,cacheTarget=None):
-        self.cache_type_ckr()
-        if self.type == "f":
-            with open(self.PATH+"\\"+name+".atmc",'r') as fIO:
-                raw_dat = fIO.read()
-                return self.decode(raw_dat)
-
-        if self.type == "b":
-            self.cache_file = self.PATH+"\\"+cacheTarget+".json"
-            self.type_b_cache_fixer(self.cache_file)
-            with open(self.cache_file,'r+') as fIO:
-                raw_dat = fIO.read()
-                cache_data = json.loads(raw_dat)
-                return self.decode(cache_data[name])
+    def clear(self,cacheTarget):
+        pass
