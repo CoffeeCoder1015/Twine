@@ -34,8 +34,8 @@ class cache_machine:
                 self.set_error_checker()
 
     #internal function
-    def che_init(self):
-        with open(self.cache_file,'w') as fIO:
+    def che_init(self,cache_file):
+        with open(cache_file,'w') as fIO:
             fIO.write("{\n}")
 
     #internal function
@@ -64,7 +64,7 @@ class cache_machine:
         r"""The function overwrites data, please fetch previous data
         and add new data onto it if you want to append data
         """
-        self.cacheTarget = cacheTarget
+
         data = list(bytes(data,'utf-8').hex())
         I= 1
         for i in range(0,len(data)):
@@ -74,32 +74,34 @@ class cache_machine:
         
         data="".join(data)
 
-        self.cache_file = self.PATH+"\\"+cacheTarget+".json"
+        cache_file = self.PATH+"\\"+cacheTarget+".json"
         #error handeling
-        cft = os.path.isfile(self.cache_file)
+        cft = os.path.isfile(cache_file)
         if cft == False:
-            self.che_init()
+            self.che_init(cache_file)
         else:
-            fs = os.path.getsize(self.cache_file)
+            fs = os.path.getsize(cache_file)
             if fs == 0:
-                self.che_init()
-        self.type_b_cache_fixer(self.cache_file)
-        with open(self.cache_file,'r+') as fIO:
+                self.che_init(cache_file)
+        self.type_b_cache_fixer(cache_file)
+        with open(cache_file,'r+') as fIO:
             raw_dat = fIO.read()
             cache_data = json.loads(raw_dat)
             cache_data[name] = data.replace("\n","")
             cache_data = json.dumps(cache_data,indent=4)
             fIO.seek(0)
             fIO.writelines(cache_data)
-        self.type_b_cache_fixer(self.cache_file)
+        self.type_b_cache_fixer(cache_file)
 
     def withdraw(self,name,cacheTarget):
-        self.cache_file = self.PATH+"\\"+cacheTarget+".json"
-        self.type_b_cache_fixer(self.cache_file)
-        with open(self.cache_file,'r+') as fIO:
+        cache_file = self.PATH+"\\"+cacheTarget+".json"
+        self.type_b_cache_fixer(cache_file)
+        with open(cache_file,'r+') as fIO:
             raw_dat = fIO.read()
             cache_data = json.loads(raw_dat)
             return self.decode(cache_data[name])
 
     def clear(self,cacheTarget):
-        pass
+        cache_file = self.PATH+"\\"+cacheTarget+".json"
+        with open(cache_file,"r+")as fIO:
+            fIO.truncate(0)

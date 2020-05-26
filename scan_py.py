@@ -1,10 +1,8 @@
-import json
-from concurrent.futures import ThreadPoolExecutor
 import os
-import numpy as np
-import ATM
+from concurrent.futures import ThreadPoolExecutor
+
 from director import cd
-import time
+
 
 class scan:
     def __init__ (self,Name='',matchMode='',searchType=''):
@@ -37,12 +35,11 @@ class scan:
         if path == ".":
             path = os.getcwd()
         
-        #cache init
-        cacher = ATM.cache_machine(name="Twine",start_pos=os.getcwd())
-
-        cd(path=path)
+        CD = cd(path=path)
         path = os.getcwd()
-        
+        #outer retrieve
+        self.path = path
+
         #search fireld setup
         ags_lst = os.listdir()
         files = []
@@ -87,12 +84,8 @@ class scan:
         #wait for completion
         ptpx.shutdown(wait=True)
 
-        #deposit cache
-        print(json.dumps(self.rls,indent=4))
-        #self.ret_lst_raw = str(self.ret_lst_raw.tolist()).replace("'","").replace("], [","]\n[")
-        #cacher.deposit(data=self.ret_lst_raw,name=path,cacheTarget="twine_cache")
-        #print(cacher.withdraw(name=path,cacheTarget="twine_cache"))
-
+        #return
+        CD.ret_start()
 
     #internal function
     def scanner(self,path=None):
