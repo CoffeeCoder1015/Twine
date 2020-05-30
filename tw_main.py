@@ -8,4 +8,4 @@ SCAN.scan_mc(path="..")
 path=SCAN.path
 rls =SCAN.rls
 
-print(rls.__sizeof__())
+print(rls)
