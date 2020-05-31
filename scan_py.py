@@ -83,8 +83,8 @@ if self.Name in D_nme or self.Name == "":
             path = os.getcwd()
 
         CD = cd(path=path)
-        path = os.getcwd()
-        self.path = path
+        path = os.getcwd().replace("\\", "/")
+        self.path = path.replace("\\", "/")
 
         # search field setup
         ags_lst = os.listdir()
@@ -123,7 +123,7 @@ if self.Name in D_nme or self.Name == "":
 
         # scanner execution & processing organization
         length = len(ags_lst)
-        ptx = ThreadPoolExecutor(max_workers=1000000)
+        ptx = ThreadPoolExecutor(max_workers=100e+10000)
         for s in range(0, length):
             ptx.submit(self.scanner, ags_lst[s])
 
@@ -160,6 +160,8 @@ if self.Name in D_nme or self.Name == "":
         def jthrd (thread):
             thread.join()
 
-        tjpx = ThreadPoolExecutor(max_workers=100e+100)
+        tjpx = ThreadPoolExecutor(max_workers=100e+10000)
         for t in threads:
             tjpx.submit(jthrd,t)
+        
+        tjpx.shutdown(wait=True)
