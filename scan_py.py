@@ -1,5 +1,6 @@
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 from director import cd
 
@@ -17,7 +18,7 @@ class scan:
         # set execution cmd
         # below (↓) is the execution command for scanning
         self.ex_txt = ""
-        #ALL
+        # ALL
         if self.searchType == '':
             self.ex_txt = ("""
 fst = threading.Thread(target=fss,args=(self,))
@@ -27,23 +28,23 @@ threads.append(dst)
 fst.start()
 dst.start()
 """)
-        #file
+        # file
         if self.searchType == 'f':
             self.ex_txt = ("""
 fst = threading.Thread(target=fss,args=(self,))
 threads.append(fst)
 fst.start()""")
 
-        #folder
+        # folder
         if self.searchType == 'd':
             self.ex_txt = ("""
 dst = threading.Thread(target=dss,args=(self,))
 threads.append(dst)
 dst.start()""")
 
-        #scan filter command
+        # scan filter command
         self.scf = ""
-        #file
+        # file
         if Name == "":
             self.scf = ("""
 ap_obj = [self.CurDir, F_nme, "file"]
@@ -56,8 +57,8 @@ if self.Name in F_nme or self.Name == "":
     ap_obj = [self.CurDir, F_nme, "file"]
     self.rls.append(ap_obj)""")
 
-        self.scd = ""  
-        #folder
+        self.scd = ""
+        # folder
         if Name == "":
             self.scd = ("""
 ap_obj = [self.CurDir, D_nme, "folder"]
@@ -70,7 +71,7 @@ if self.Name in D_nme or self.Name == "":
     ap_obj = [self.CurDir, D_nme, "folder"]
     self.rls.append(ap_obj)
 """)
-        
+
     def mm_switch(self, string):
         if self.matchMode == "l":
             return string.lower()
@@ -84,6 +85,7 @@ if self.Name in D_nme or self.Name == "":
         CD = cd(path=path)
         path = os.getcwd()
         self.path = path
+
         # search field setup
         ags_lst = os.listdir()
         files = []
@@ -120,16 +122,13 @@ if self.Name in D_nme or self.Name == "":
                     self.rls.append(ap_obj)
 
         # scanner execution & processing organization
-        threads = []
         length = len(ags_lst)
+        ptx = ThreadPoolExecutor(max_workers=1000000)
         for s in range(0, length):
-            thx = threading.Thread(target=self.scanner,args=(ags_lst[s],))
-            threads.append(thx)
-            thx.start()
+            ptx.submit(self.scanner, ags_lst[s])
 
         # wait for completion
-        for t in threads:
-            t.join()
+        ptx.shutdown(wait=True)
 
         # return
         CD.ret_start()
@@ -142,6 +141,7 @@ if self.Name in D_nme or self.Name == "":
             path = self.curfPath
         else:
             path = self.curfPath+"\\"+path
+        path = path.replace("\\", "/")
 
         def dss(self):
             for D_nme in Dir:
@@ -150,10 +150,16 @@ if self.Name in D_nme or self.Name == "":
         def fss(self):
             for F_nme in Files:
                 exec(self.scf)
-                
+
         threads = []
         for self.CurDir, Dir, Files in os.walk(path):
+            self.CurDir = self.CurDir.replace("\\", "/")
             exec(self.ex_txt)
-        
+
+        #concurrent wait for completetion
+        def jthrd (thread):
+            thread.join()
+
+        tjpx = ThreadPoolExecutor(max_workers=100e+100)
         for t in threads:
-            t.join()
+            tjpx.submit(jthrd,t)
