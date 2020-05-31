@@ -156,10 +156,13 @@ if self.Name in D_nme or self.Name == "":
             self.CurDir = self.CurDir.replace("\\", "/")
             exec(self.ex_txt)
 
+<<<<<<< HEAD
         #concurrent wait for completetion
         def jthrd (thread):
             thread.join()
 
         tjpx = ThreadPoolExecutor(max_workers=100e+100)
+=======
+>>>>>>> 07eb7094fd23620d8cd5b4918016daa11eab1094
         for t in threads:
             tjpx.submit(jthrd,t)
