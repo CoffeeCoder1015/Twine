@@ -83,7 +83,7 @@ if self.Name in D_nme or self.Name == "":
 
         CD = cd(path=path)
         path = os.getcwd()
-
+        self.path = path
         # search field setup
         ags_lst = os.listdir()
         files = []
