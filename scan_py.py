@@ -57,14 +57,14 @@ class scan:
 
         for s in range(0, length):
             thrd = threading.Thread(target=self.scanner, args=(ags_lst[s],))
+            thrd.start()
             threads.append(thrd)
 
         # concurrent wait for completetion
         def jthrd(thread):
-            thread.start()
             thread.join()
 
-        tjpx = ThreadPoolExecutor(max_workers=100e+10000)
+        tjpx = ThreadPoolExecutor(max_workers=10000)
         for t in threads:
             tjpx.submit(jthrd, t)
 

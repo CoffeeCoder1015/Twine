@@ -11,9 +11,9 @@ class cd:
 
     def top(self):
         SourceDir = []
-        curDir = list(os.getcwd())
+        curDir = list(os.getcwd().replace("\\","/"))
         for i in range(0,len(curDir)):
-            if curDir[i] == "\\":
+            if curDir[i] == "/":
                 SourceDir.extend(curDir[i])
                 break
             SourceDir.extend(curDir[i])
