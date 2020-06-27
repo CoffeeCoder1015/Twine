@@ -110,6 +110,7 @@ show  {b}  show whats scanned
 open  {b}  open selected file or folder
 search{b}  search for file or folder
 help  {b}  show this text
+<KeyboardInterrupt>{b}  exit program
 {tmargin}"""
 ).format(b=colored(" | ", "green"),tmargin=colored("----------------------------","blue"))
         print(htxt)
