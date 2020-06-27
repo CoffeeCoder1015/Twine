@@ -9,13 +9,13 @@ class scan:
         self.Name = Name
         self.matchMode = matchMode
 
-        if matchMode == "l":
+        if matchMode == "c":
             self.Name = self.Name.lower()
         self.searchType = searchType.lower()
         self.rls = []
 
     def mm_switch(self, string):
-        if self.matchMode == "l":
+        if self.matchMode == "c":
             return string.lower()
         if self.matchMode == "":
             return string
@@ -38,17 +38,18 @@ class scan:
         for i in files:
             ags_lst.remove(i)
 
+        CurDir = os.getcwd().replace("\\", "/").replace("//","/")+"/"
         # un-touched folder&file appending
         if self.searchType == "" or self.searchType == 'd':
             for i in range(0, len(ags_lst)):
                 if self.Name in self.mm_switch(ags_lst[i]):
-                    ap_obj = [os.getcwd(), ags_lst[i], "folder"]
+                    ap_obj = [CurDir, ags_lst[i], "folder"]
                     self.rls.append(ap_obj)
 
         if self.searchType == "" or self.searchType == 'f':
             for i in range(0, len(files)):
                 if self.Name in self.mm_switch(files[i]):
-                    ap_obj = [os.getcwd(), files[i], "file"]
+                    ap_obj = [CurDir, files[i], "file"]
                     self.rls.append(ap_obj)
 
         # scanner execution & processing organization
@@ -93,7 +94,7 @@ class scan:
 
         # get files
         for CurDir, Dir, Files in os.walk(path):
-            CurDir = CurDir.replace("\\", "/")
+            CurDir = CurDir.replace("\\", "/").replace("//","/")+"/"
             f_struct = [CurDir, Dir, Files]
             ope.append(f_struct[:])
 
