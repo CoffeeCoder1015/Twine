@@ -43,7 +43,7 @@ class TWINE_interface:
             ID = int(input("ID of item:"))
 
         ope = self.buffer_scan_lst[ID]
-        fps = list(ope[0])
+        fps = list(ope[0].replace("/","\\"))
 
         if fps[len(fps)-1] != "\\":
             fps.extend("\\")
@@ -158,7 +158,7 @@ help  {b}  show this text
 
                     else:
                         print(colored("UNKNOWN COMMAND","red"))
-                        
+
             except KeyboardInterrupt:
                         exit()
         
