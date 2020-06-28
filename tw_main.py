@@ -31,12 +31,15 @@ class TWINE_interface:
         self.show()
 
     def show(self):
-        pad_l = len(str(len(self.buffer_scan_lst)))
-        for i in range(0, len(self.buffer_scan_lst)):
-            j = self.buffer_scan_lst[i]
-            k_pad = format(i, "0%s" % (pad_l))
-            ss = colored(str(k_pad)+" ", "blue") + colored(" | ", "green").join(j)
-            print(ss)
+        if self.buffer_scan_lst != None:
+            pad_l = len(str(len(self.buffer_scan_lst)))
+            for i in range(0, len(self.buffer_scan_lst)):
+                j = self.buffer_scan_lst[i]
+                k_pad = format(i, "0%s" % (pad_l))
+                ss = colored(str(k_pad)+" ", "blue") + colored(" | ", "green").join(j)
+                print(ss)
+        else:
+            print((colored("NOTHING HAS BEEN SCANNED\ntype scan/ls to load something into self.buffer_scan_lst","red")))
 
     def Open(self,ID=None):
         if ID == None:
