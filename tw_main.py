@@ -57,6 +57,7 @@ class TWINE_interface:
         os.system(execc)
 
     def ar_input (self,ip_txt:str,bk_txt:str,err_msg:str,acpt_resp:list):
+        #argument rquired input system
         while True:
             v_ip = input(ip_txt)
             checks = 0
