@@ -117,7 +117,12 @@ class scan:
 
         tpx.shutdown(wait=True)
 
-        if self.searchType == "" or self.searchType == "f":
+        if self.searchType == "":
             ap_func(self, "file", 2)
-        if self.searchType == "" or self.searchType == "d":
+            ap_func(self, "folder", 1)
+
+        if self.searchType == "f":
+            ap_func(self, "file", 2)
+
+        if self.searchType == "d":
             ap_func(self, "folder", 1)
