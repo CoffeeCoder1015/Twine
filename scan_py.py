@@ -24,7 +24,7 @@ class scan:
         if path == ".":
             path = os.getcwd()
 
-        CD = cd(path=path)
+        cd(path=path)
         path = os.getcwd().replace("\\", "/")
         self.path = path.replace("\\", "/")
 
@@ -71,9 +71,6 @@ class scan:
 
         tjpx.shutdown(True)
 
-        # return
-        CD.ret_start()
-
     # internal function
     def scanner(self, path=None):
         self.curfPath = os.getcwd()
@@ -103,7 +100,7 @@ class scan:
             del_lst = []
 
             for j in lst:
-                if self.Name not in j:
+                if self.Name not in self.mm_switch(j):
                     del_lst.append(j)
 
             for l in del_lst:
