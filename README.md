@@ -1,5 +1,5 @@
 # Twine
-system scanner made with python
+*system scanner made with python*
 
 # use
 - for cli use ```py tw_main.py```
