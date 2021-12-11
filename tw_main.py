@@ -194,7 +194,7 @@ help  {b}  show this text
                         try:
 
                             if cmd_in[0] == "cd":
-                                cmd_lst[cmd_in[0]](cmd_in[1])
+                                cmd_lst[cmd_in[0]](" ".join(cmd_in[1:]))
                             elif cmd_in[0] == "open" and 2 <= len(cmd_in) <= 3:
                                 cmd_lst[cmd_in[0]](*cmd_in[1:])
                             else:

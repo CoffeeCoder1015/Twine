@@ -3,7 +3,6 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from director import cd
 
-
 class scan:
     def __init__(self, Name='', matchMode='', searchType=''):
         self.Name = Name
@@ -17,7 +16,7 @@ class scan:
     def mm_switch(self, string):
         if self.matchMode == "c":
             return string.lower()
-        if self.matchMode == "":
+        elif self.matchMode == "":
             return string
 
     def scan_mc(self, path="."):
@@ -38,41 +37,33 @@ class scan:
         for i in files:
             ags_lst.remove(i)
 
-        CurDir = os.getcwd().replace("\\", "/").replace("//","/")+"/"
+        CurDir = os.getcwd().replace("\\", "/").replace("//", "/")+"/"
         # un-touched folder&file appending
         if self.searchType == "" or self.searchType == 'd':
-            for i in range(0, len(ags_lst)):
-                if self.Name in self.mm_switch(ags_lst[i]):
-                    ap_obj = [CurDir, ags_lst[i], "folder"]
-                    self.rls.append(ap_obj)
+            for i in ags_lst:
+                if self.Name in self.mm_switch(i):
+                    self.rls.append([CurDir, i, "folder"])
 
         if self.searchType == "" or self.searchType == 'f':
-            for i in range(0, len(files)):
-                if self.Name in self.mm_switch(files[i]):
-                    ap_obj = [CurDir, files[i], "file"]
-                    self.rls.append(ap_obj)
+            for i in files:
+                if self.Name in self.mm_switch(i):
+                    self.rls.append([CurDir, i, "file"])
 
-        # scanner execution & processing organization
         length = len(ags_lst)
-        threads = []
+        tpx = ThreadPoolExecutor(length)
+        # scanner execution & processing organization
+        self.current = -1
+        for i, v in enumerate(ags_lst):
+            tpx.submit(self.scanner, i, v)
 
-        for s in range(0, length):
-            thrd = threading.Thread(target=self.scanner, args=(ags_lst[s],))
-            thrd.start()
-            threads.append(thrd)
-
-        # concurrent wait for completetion
-        def jthrd(thread):
-            thread.join()
-
-        tjpx = ThreadPoolExecutor(max_workers=10000)
-        for t in threads:
-            tjpx.submit(jthrd, t)
-
-        tjpx.shutdown(True)
+        for i in range(0, length):
+            self.current = i
+            while self.current != -1:
+                pass
+            print("thread", i, "completed")
 
     # internal function
-    def scanner(self, path=None):
+    def scanner(self, idn, path=None):
         self.curfPath = os.getcwd()
         self.working = True
         if path == "" or path == None or path == 0:
@@ -83,43 +74,18 @@ class scan:
 
         ope = []
 
-        def ap_func(self, type, lst_ID: int):
-            for i in range(0, len(ope)):
-                for j in range(0, len(ope[i][lst_ID])):
-                    ap_obj = [ope[i][0], ope[i][lst_ID][j], type]
-                    self.rls.append(ap_obj)
-
         # get files
         for CurDir, Dir, Files in os.walk(path):
-            CurDir = CurDir.replace("\\", "/").replace("//","/")+"/"
-            f_struct = [CurDir, Dir, Files]
-            ope.append(f_struct[:])
+            CurDir = CurDir.replace("\\", "/").replace("//", "/")+"/"
+            if self.searchType == "" or self.searchType == "f":
+                ope += [[CurDir, i, "file"]
+                        for i in Files if self.Name in self.mm_switch(i)]
+            if self.searchType == "" or self.searchType == "d":
+                ope += [[CurDir, i, "folder"]
+                        for i in Dir if self.Name in self.mm_switch(i)]
 
-        # filter
-        def filt(self, lst):
-            del_lst = []
-
-            for j in lst:
-                if self.Name not in self.mm_switch(j):
-                    del_lst.append(j)
-
-            for l in del_lst:
-                lst.remove(l)
-            del_lst.clear()
-
-        tpx = ThreadPoolExecutor()
-        for i in range(0, len(ope)):
-            tpx.submit(filt, self, ope[i][1])
-            tpx.submit(filt, self, ope[i][2])
-
-        tpx.shutdown(wait=True)
-
-        if self.searchType == "":
-            ap_func(self, "file", 2)
-            ap_func(self, "folder", 1)
-
-        if self.searchType == "f":
-            ap_func(self, "file", 2)
-
-        if self.searchType == "d":
-            ap_func(self, "folder", 1)
+        while True:
+            if idn == self.current:
+                self.rls += ope
+                self.current = -1
+                break
