@@ -7,8 +7,20 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
+var (
+    HeaderStyle = lipgloss.NewStyle().
+        Bold(true).
+        Foreground(lipgloss.Color("#f0ece1")).
+        Background(lipgloss.Color("#68c238"))
+    TitleStyle = HeaderStyle. 
+        Width(50).
+        Align(lipgloss.Center).
+        Border(lipgloss.RoundedBorder()).
+        BorderForeground(lipgloss.Color("#33d483"))
+)
 
 type model struct{
     regexInput textinput.Model
@@ -34,7 +46,8 @@ func (m model) Init() tea.Cmd {
 
 // Called to render UI
 func (m model) View() string{
-    s := ">> Twine <<\n"
+    header := TitleStyle.Render(">> Twine <<")
+    s := header+"\n"
     s+=m.regexInput.View()+"\n"
 
     input_length := len(m.regexInput.Value())
