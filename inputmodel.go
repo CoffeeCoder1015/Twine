@@ -38,6 +38,7 @@ type InputModel struct {
     inputs  []textinput.Model
     nameRgex *regexp.Regexp
     modeRgex *regexp.Regexp
+    validCount int
 }
 
 func InitInput() InputModel{
@@ -144,6 +145,7 @@ func (m* InputModel) UpdateInputs(msg tea.Msg) tea.Cmd{
 }
 
 func (m* InputModel) ProcessInputs() {
+    m.validCount = 0
     for i := range m.inputs{
         valid := false
         input := m.inputs[i]
@@ -213,6 +215,7 @@ func (m* InputModel) ProcessInputs() {
 
         if valid{
             m.inputs[i].TextStyle = valueCorrectStyle
+            m.validCount++
         }else{
             m.inputs[i].TextStyle = valueIncorrectStyle
         }
