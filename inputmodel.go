@@ -11,6 +11,9 @@ import (
 var (
     ModelStyle = lipgloss.NewStyle().
         Border(lipgloss.NormalBorder())
+
+    PlaceholderStyle = lipgloss.NewStyle().
+        Italic(true)
         
 )
 
@@ -29,7 +32,8 @@ func InitInput() InputModel{
     for i := range m.inputs{
         input = textinput.New()
         input.Width = 40
-        input.PlaceholderStyle.Italic(true)
+        input.PlaceholderStyle = input.PlaceholderStyle. 
+            Italic(true)
         switch i{
         case 0:
             input.Prompt = "Search directory: "
