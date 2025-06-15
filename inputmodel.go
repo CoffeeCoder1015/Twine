@@ -73,16 +73,16 @@ func InitInput() InputModel{
             input.Placeholder = ".* "
         case 2:
             input.Prompt = "File size: "
-            input.Placeholder = "> 0b"
+            input.Placeholder = "0b-"
         case 3:
             input.Prompt = "File mode: "
-            input.Placeholder = "-----"
+            input.Placeholder = ".*"
         case 4:
             input.Prompt = "Mod time: "
-            input.Placeholder = "< 1978-03-12 13:23"
+            input.Placeholder = "1970 00:00:00-today"
         case 5:
             input.Prompt = "Directory/File: "
-            input.Placeholder = "dir / file / all"
+            input.Placeholder = "dir|file|all"
         }
 
         m.inputs[i] = input
