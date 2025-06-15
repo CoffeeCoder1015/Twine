@@ -37,11 +37,13 @@ type ResultsList struct{
 }
 
 func InitResults() ResultsList{
+    l := list.New(_tempList("."),list.NewDefaultDelegate(),0,0)
+    l.Title = "Results"
     return ResultsList{
         filter: queryFilterPattern{
             directory: ".",
         },
-        list: list.New(_tempList("."),list.NewDefaultDelegate(),0,0),
+        list: l,
     }
 }
 
