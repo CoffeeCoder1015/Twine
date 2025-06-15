@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"regexp"
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -13,15 +12,6 @@ import (
 var ( 
     docStyle = lipgloss.NewStyle().Border(lipgloss.HiddenBorder())
 )
-
-type queryFilterPattern struct{
-    directory string
-    name *regexp.Regexp
-    fileSize string
-    mode *regexp.Regexp
-    date string
-    DirFile string
-}
 
 type item struct{
     title, desc string
