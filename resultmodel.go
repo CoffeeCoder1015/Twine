@@ -11,7 +11,7 @@ import (
 )
 
 var ( 
-    docStyle = lipgloss.NewStyle().Margin(0, 1).Border(lipgloss.NormalBorder())
+    docStyle = lipgloss.NewStyle().Margin(1, 0)
 )
 
 type queryFilterPattern struct{
@@ -50,8 +50,8 @@ func (m ResultsList) Init() tea.Cmd{
 func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
     	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v-30)
+        h, v := docStyle.GetFrameSize()
+        m.list.SetSize(msg.Width-h, msg.Height-v-12)
 	}
 
         m.list.SetItems(_tempList(m.filter.directory))

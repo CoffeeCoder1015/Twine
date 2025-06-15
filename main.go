@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -44,7 +43,6 @@ func (m model) View() string{
     header := TitleStyle.Render(">> Twine <<")
     s := header+"\n"
     s += m.inputs.View() + "\n"
-    s += strconv.Itoa(m.inputs.validCount) + "\n"
     s += m.results.View()
     return s
 }
