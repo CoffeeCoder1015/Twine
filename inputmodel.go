@@ -32,21 +32,27 @@ func InitInput() InputModel{
         input.PlaceholderStyle.Italic(true)
         switch i{
         case 0:
-            input.Prompt = "Search directory:"
+            input.Prompt = "Search directory: "
             input.Placeholder = "<current directory>"
-            input.Width = 40
         case 1:
             // set as focus
             input.Focus()
             m.focus = i
 
-            input.Prompt = "Match pattern:"
+            input.Prompt = "Match pattern: "
             input.Placeholder = ".* "
-            input.Width = 40
         case 2:
+            input.Prompt = "File size: "
+            input.Placeholder = "> 0b"
         case 3:
+            input.Prompt = "File mode: "
+            input.Placeholder = "-----"
         case 4:
+            input.Prompt = "Mod time: "
+            input.Placeholder = "< 1978-03-12 13:23"
         case 5:
+            input.Prompt = "Directory/File: "
+            input.Placeholder = "dir / file / all"
         }
 
         m.inputs[i] = input
