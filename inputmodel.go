@@ -12,7 +12,7 @@ import (
 )
 
 var (
-    ModelStyle = lipgloss.NewStyle()
+    ModelStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
 
     promptFocusedStyle = lipgloss.NewStyle()
     promptBluredStyle = lipgloss.NewStyle().
