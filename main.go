@@ -54,6 +54,7 @@ func (m model) View() string{
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     var cmd tea.Cmd
 
+    passThrough := true
     switch msg := msg.(type) {
     case tea.KeyMsg:
         switch msg.Type {
@@ -70,13 +71,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                 ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
             }
             return m, cmd
+        case tea.KeyRunes:
+            passThrough = false
         }
     }
+
+
     if m.focus == 0{
         m.inputs, cmd = m.inputs.Update(msg)
-        m.results.filter.directory = m.inputs.inputs[0].Value()
-        m.results, _ = m.results.Update(msg)
-        m.results.UpdateList()
+        if passThrough {
+            m.results.filter.directory = m.inputs.inputs[0].Value()
+            m.results, _ = m.results.Update(msg)
+            m.results.UpdateList()
+        }
     }else{
         m.results, cmd = m.results.Update(msg)
     }
