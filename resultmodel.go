@@ -38,7 +38,9 @@ type ResultsList struct{
 
 func InitResults() ResultsList{
     return ResultsList{
-        filter: queryFilterPattern{},
+        filter: queryFilterPattern{
+            directory: ".",
+        },
         list: list.New(_tempList("."),list.NewDefaultDelegate(),0,0),
     }
 }
@@ -48,20 +50,23 @@ func (m ResultsList) Init() tea.Cmd{
 }
 
 func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
-    	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
+    switch msg := msg.(type) {
+    case tea.WindowSizeMsg:
         h, v := docStyle.GetFrameSize()
         m.list.SetSize(msg.Width-h, msg.Height-v-12)
-	}
+    }
 
-        m.list.SetItems(_tempList(m.filter.directory))
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+    var cmd tea.Cmd
+    m.list, cmd = m.list.Update(msg)
+    return m, cmd
 }
 
 func (m ResultsList) View() string{
     return docStyle.Render(m.list.View())
+}
+
+func (m* ResultsList) UpdateList(){
+    m.list.SetItems(_tempList(m.filter.directory))
 }
 
 func _tempList(dir string) []list.Item{

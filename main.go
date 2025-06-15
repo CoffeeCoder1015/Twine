@@ -22,12 +22,14 @@ var (
 )
 
 type model struct{
+    focus int
     inputs InputModel
     results ResultsList
 }
 
 func initModel() model{
    return model{
+        focus: 0,
         inputs: InitInput(),
         results: InitResults(),
     } 
@@ -57,17 +59,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         switch msg.Type {
         case tea.KeyCtrlC, tea.KeyEsc:
             return m, tea.Quit
+        case tea.KeyShiftDown,tea.KeyShiftUp:
+            if m.focus == 0{
+                m.focus = 1
+                ModelStyle = ModelStyle.Border(lipgloss.HiddenBorder())
+                docStyle = docStyle.Border(lipgloss.NormalBorder())
+            }else{
+                m.focus = 0
+                docStyle = docStyle.Border(lipgloss.HiddenBorder())
+                ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
+            }
+            return m, cmd
         }
     }
-    m.inputs, cmd = m.inputs.Update(msg)
-
-    if m.inputs.validCount == len(m.inputs.inputs){
+    if m.focus == 0{
+        m.inputs, cmd = m.inputs.Update(msg)
+        m.results.filter.directory = m.inputs.inputs[0].Value()
+        m.results, _ = m.results.Update(msg)
+        m.results.UpdateList()
+    }else{
+        m.results, cmd = m.results.Update(msg)
     }
-    m.results.filter.directory = m.inputs.inputs[0].Value()
-    newResults, resultsCmd := m.results.Update(msg)
-    m.results = newResults
-    cmd = tea.Batch(resultsCmd,cmd)
-
     return m,cmd
 }
 
