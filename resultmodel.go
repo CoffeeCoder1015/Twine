@@ -11,7 +11,7 @@ import (
 )
 
 var ( 
-    docStyle = lipgloss.NewStyle().Margin(1, 0)
+    docStyle = lipgloss.NewStyle().Border(lipgloss.HiddenBorder())
 )
 
 type queryFilterPattern struct{
