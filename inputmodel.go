@@ -12,9 +12,10 @@ var (
     ModelStyle = lipgloss.NewStyle().
         Border(lipgloss.NormalBorder())
 
-    PlaceholderStyle = lipgloss.NewStyle().
-        Italic(true)
-        
+    promptFocusedStyle = lipgloss.NewStyle()
+    promptBluredStyle = lipgloss.NewStyle().
+        Italic(true).
+        Foreground(lipgloss.Color( "240" ))
 )
 
 
@@ -32,6 +33,7 @@ func InitInput() InputModel{
     for i := range m.inputs{
         input = textinput.New()
         input.Width = 40
+        input.PromptStyle = promptBluredStyle
         input.PlaceholderStyle = input.PlaceholderStyle. 
             Italic(true)
         switch i{
@@ -42,6 +44,7 @@ func InitInput() InputModel{
             // set as focus
             input.Focus()
             m.focus = i
+            input.PromptStyle = promptFocusedStyle
 
             input.Prompt = "Match pattern: "
             input.Placeholder = ".* "
@@ -90,7 +93,12 @@ func (m InputModel) Update(msg tea.Msg) (InputModel,tea.Cmd ){
 
             cmds := make([]tea.Cmd, len(m.inputs))
             for i := range m.inputs{
+                if i == m.focus{
+                    m.inputs[i].PromptStyle = promptFocusedStyle
+                    continue
+                }
                 m.inputs[i].Blur()
+                m.inputs[i].PromptStyle = promptBluredStyle
             }
             cmds[m.focus] = m.inputs[m.focus].Focus()
             return m,tea.Batch(cmds...)
