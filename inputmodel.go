@@ -103,6 +103,10 @@ func (m InputModel) Update(msg tea.Msg) (InputModel,tea.Cmd ){
         case tea.KeyTab, tea.KeyShiftTab:
             s := msg.String()
 
+            if m.inputs[m.focus].Value() == ""{
+                m.autoFill()
+            }
+
             if s == "tab" {
                 m.focus++
             }else{
@@ -221,6 +225,29 @@ func (m* InputModel) ProcessInputs() {
         }
     }
 
+}
+
+func (m* InputModel) autoFill(){
+    input := &m.inputs[m.focus]
+    switch m.focus{
+    case 0:
+        wd, err :=  os.Getwd()
+        if err == nil {
+            input.SetValue(wd)
+        }else{
+            fmt.Println(err)
+        }
+    case 1:
+        input.SetValue(".*")
+    case 2:
+        input.SetValue("0b-")
+    case 3:
+        input.SetValue(".*")
+    case 4:
+        input.SetValue("-today")
+    case 5:
+        input.SetValue("all")
+    }
 }
 
 func (m InputModel) View() string{

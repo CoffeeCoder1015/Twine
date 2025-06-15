@@ -42,7 +42,7 @@ func (m model) View() string{
     header := TitleStyle.Render(">> Twine <<")
     s := header+"\n"
     s += m.inputs.View() + "\n"
-    s += strconv.Itoa(m.inputs.focus)
+    s += strconv.Itoa(m.inputs.validCount)
     return s
 }
 
