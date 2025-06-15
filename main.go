@@ -58,7 +58,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     switch msg := msg.(type) {
     case tea.KeyMsg:
         switch msg.Type {
-        case tea.KeyCtrlC, tea.KeyEsc:
+        case tea.KeyCtrlC:
             return m, tea.Quit
         case tea.KeyShiftDown,tea.KeyShiftUp:
             if m.focus == 0{

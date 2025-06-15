@@ -37,8 +37,12 @@ type ResultsList struct{
 }
 
 func InitResults() ResultsList{
-    l := list.New(_tempList("."),list.NewDefaultDelegate(),0,0)
+    delegate := list.NewDefaultDelegate()
+    l := list.New(_tempList("."),delegate,0,0)
     l.Title = "Results"
+    l.KeyMap.Quit.Unbind()
+    l.KeyMap.ForceQuit.Unbind()
+
     return ResultsList{
         filter: queryFilterPattern{
             directory: ".",
