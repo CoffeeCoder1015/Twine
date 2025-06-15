@@ -24,11 +24,13 @@ var (
 
 type model struct{
     inputs InputModel
+    results ResultsList
 }
 
 func initModel() model{
    return model{
         inputs: InitInput(),
+        results: InitResults(),
     } 
 }
 
@@ -42,7 +44,8 @@ func (m model) View() string{
     header := TitleStyle.Render(">> Twine <<")
     s := header+"\n"
     s += m.inputs.View() + "\n"
-    s += strconv.Itoa(m.inputs.validCount)
+    s += strconv.Itoa(m.inputs.validCount) + "\n"
+    s += m.results.View()
     return s
 }
 
@@ -58,8 +61,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
             return m, tea.Quit
         }
     }
-
     m.inputs, cmd = m.inputs.Update(msg)
+
+    if m.inputs.validCount == len(m.inputs.inputs){
+    }
+    m.results.filter.directory = m.inputs.inputs[0].Value()
+    newResults, resultsCmd := m.results.Update(msg)
+    m.results = newResults
+    cmd = tea.Batch(resultsCmd,cmd)
+
     return m,cmd
 }
 
