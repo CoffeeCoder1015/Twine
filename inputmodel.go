@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -16,12 +19,25 @@ var (
     promptBluredStyle = lipgloss.NewStyle().
         Italic(true).
         Foreground(lipgloss.Color( "240" ))
+
+    valueCorrectStyle = lipgloss.NewStyle().
+        Foreground(lipgloss.Color("#68c238")).
+        Italic(true)
+
+    valueIncorrectStyle = lipgloss.NewStyle().
+        Foreground(lipgloss.Color("#ff3b14")).
+        Italic(true)
+
+    fileSizeMatcher = regexp.MustCompile("^\\d+(?:[kmg]i?b|b)$")
+    dateMatcher = regexp.MustCompile("^(?:\\d{4}-\\d{2}-\\d{2}|today)(?: \\d{2}:\\d{2}:\\d{2})?$")
 )
 
 
 type InputModel struct {
     focus int
     inputs  []textinput.Model
+    nameRgex *regexp.Regexp
+    modeRgex *regexp.Regexp
 }
 
 func InitInput() InputModel{
@@ -39,7 +55,14 @@ func InitInput() InputModel{
         switch i{
         case 0:
             input.Prompt = "Search directory: "
-            input.Placeholder = "<current directory>"
+            input.Placeholder = "<directory>"
+            input.TextStyle = valueCorrectStyle
+            wd, err :=  os.Getwd()
+            if err == nil {
+                input.SetValue(wd)
+            }else{
+                fmt.Println(err)
+            }
         case 1:
             // set as focus
             input.Focus()
@@ -115,8 +138,86 @@ func (m* InputModel) UpdateInputs(msg tea.Msg) tea.Cmd{
     for i := range m.inputs{
         m.inputs[i],cmds[i] = m.inputs[i].Update(msg)
     }
+    m.ProcessInputs()
 
     return tea.Batch(cmds...)
+}
+
+func (m* InputModel) ProcessInputs() {
+    for i := range m.inputs{
+        valid := false
+        input := m.inputs[i]
+        switch i {
+        // Valid search directory
+        case 0: 
+            _, err := os.Stat(input.Value())
+            valid = err == nil
+        // Valid regex
+        case 1:
+            regexObject, err := regexp.Compile(input.Value())
+            valid = err == nil
+            if err == nil{
+                m.nameRgex = regexObject
+            }else{
+                m.nameRgex = nil
+            }
+        // Valid file size range
+        case 2:
+            base := input.Value()
+            if strings.Contains(base,"-"){
+                split := strings.Split(base,"-")
+                if split[0] == "" && split[1] == ""{
+                    // faulty range
+                    valid = false
+                }else{
+                    lowerBound := fileSizeMatcher.MatchString(split[0]) || split[0] == ""
+                    upperBound := fileSizeMatcher.MatchString(split[1]) || split[1] == ""
+                    valid = upperBound && lowerBound
+                }
+            }else{
+                // no range provided
+                valid = false
+            }
+        case 3:
+            regexObject, err := regexp.Compile(input.Value())
+            valid = err == nil
+            if err == nil{
+                m.modeRgex = regexObject
+            }else{
+                m.modeRgex = nil
+            }
+        case 4:
+            base := input.Value()
+            if strings.Contains(base,"-"){
+                split := strings.Split(base,"-")
+                if split[0] == "" && split[1] == ""{
+                    // faulty range
+                    valid = false
+                }else{
+                    lowerBound := dateMatcher.MatchString(split[0]) || split[0] == ""
+                    upperBound := dateMatcher.MatchString(split[1]) || split[1] == ""
+                    valid = upperBound && lowerBound
+                }
+            }else{
+                // no range provided
+                valid = false
+            }
+        case 5:
+            switch input.Value(){
+            case "all", "file", "dir":
+                valid = true
+            default:
+                valid = false
+            }
+        } 
+
+        if valid{
+            m.inputs[i].TextStyle = valueCorrectStyle
+        }else{
+            m.inputs[i].TextStyle = valueIncorrectStyle
+        }
+    }
+
 }
 
 func (m InputModel) View() string{
