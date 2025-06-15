@@ -23,28 +23,13 @@ var (
 )
 
 type model struct{
-    regexInput textinput.Model
-    rootInput textinput.Model
+    inputs InputModel
 }
 
 func initModel() model{
-    regex := textinput.New()
-    regex.Focus()
-    regex.Placeholder = ".* "
-    regex.PlaceholderStyle.Italic(true)
-    regex.Prompt = "Match pattern:"
-    regex.Width = 40
-
-    root := textinput.New()
-    root.PlaceholderStyle.Italic(true)
-    root.Prompt = "Search directory:"
-    root.Placeholder = "<current directory>"
-    root.Width = 40
-
-    return model{
-        regexInput: regex,
-        rootInput: root,
-    }
+   return model{
+        inputs: InitInput(),
+    } 
 }
 
 func (m model) Init() tea.Cmd {
@@ -56,11 +41,8 @@ func (m model) Init() tea.Cmd {
 func (m model) View() string{
     header := TitleStyle.Render(">> Twine <<")
     s := header+"\n"
-    s+=m.regexInput.View()+"\n"
-    s+=m.rootInput.View()+"\n"
-
-    input_length := len(m.regexInput.Value())
-    s+=strconv.Itoa(input_length)
+    s += m.inputs.View() + "\n"
+    s += strconv.Itoa(m.inputs.focus)
     return s
 }
 
@@ -68,28 +50,16 @@ func (m model) View() string{
 // Handles state updates like key inputs
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     var cmd tea.Cmd
-   
-    switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
-        case tea.KeyTab, tea.KeyShiftTab:
-            if m.regexInput.Focused() {
-                m.regexInput.Blur() 
-                m.rootInput.Focus()
-            }else{
-                m.regexInput.Focus() 
-                m.rootInput.Blur()
-            }
-		}
-	}
 
-    updatedRegex, regxCmd := m.regexInput.Update(msg)
-    updatedRoot, rootCmd := m.rootInput.Update(msg)
-    m.regexInput = updatedRegex
-    m.rootInput = updatedRoot
-    cmd = tea.Batch(regxCmd,rootCmd)
+    switch msg := msg.(type) {
+    case tea.KeyMsg:
+        switch msg.Type {
+        case tea.KeyCtrlC, tea.KeyEsc:
+            return m, tea.Quit
+        }
+    }
+
+    m.inputs, cmd = m.inputs.Update(msg)
     return m,cmd
 }
 
