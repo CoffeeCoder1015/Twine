@@ -73,6 +73,45 @@ func (t Twine) Search(){
     }
     
     queue := []string{t.filter.directory}
+    cNode := make(chan cacheNode,3000)
+    for 0 < len(queue){
+        l := len( queue )
+        for i := range l{
+            go func ()  {
+                results := make([]resultEntry,0)
+                subdir := make([]string,0)
+                path := queue[i]
+                de, _ := os.ReadDir(path)
+                for i := range de{
+                    e := de[i]
+                    r := resultEntry{path: path,DirEntry: e}
+                    r.formatInfo()
+                    results = append(results, r)
+                    if e.IsDir() {
+                        next_path := filepath.Join(path,e.Name()) 
+                        subdir = append(subdir, next_path)
+                    }
+                } 
+                cNode <- cacheNode{r: results, subdir: subdir}
+            }()
+        }
+        for i := range l{
+            recv := <-cNode
+            t.cache[queue[i]] = recv
+            queue = append(queue, recv.subdir...)
+        }
+        queue = queue[l:]
+    }
+    close(cNode)
+}
+
+func (t Twine) SearchSingle(){
+    _,c := t.cache[t.filter.directory]
+    if c {
+        return
+    }
+    
+    queue := []string{t.filter.directory}
     for 0 < len(queue){
         results := make([]resultEntry,0)
         subdir := make([]string,0)
