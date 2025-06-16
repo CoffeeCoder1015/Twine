@@ -29,9 +29,15 @@ type resultEntry struct{
     item
 }
 
+type cacheNode struct{
+    depth int64
+    r []resultEntry
+    subdir []string
+}
+
 type Twine struct{
     filter queryFilterPattern
-    cache map[string][]resultEntry
+    cache map[string]cacheNode
 }
 
 func InitTwine() Twine{
@@ -39,14 +45,14 @@ func InitTwine() Twine{
         filter: queryFilterPattern{
             directory:".",
         },
-        cache: make(map[string][]resultEntry),
+        cache: make(map[string]cacheNode),
     }
     return t
 }
 
 func (t Twine) SmartQuery(index , width int64) []list.Item{
     t.Search()
-    cache := t.cache[t.filter.directory]
+    cache := t.flattenTree()
 
     m := index/width
     upper := min( m*width+width,int64( len(cache) ) )
@@ -66,9 +72,10 @@ func (t Twine) Search(){
         return
     }
     
-    results := make([]resultEntry,0)
     queue := []string{t.filter.directory}
     for 0 < len(queue){
+        results := make([]resultEntry,0)
+        subdir := make([]string,0)
         path := queue[0]
         queue = queue[1:]
         de, _ := os.ReadDir(path)
@@ -78,11 +85,41 @@ func (t Twine) Search(){
             r.formatInfo()
             results = append(results, r)
             if e.IsDir() {
-                queue = append(queue, filepath.Join(path,e.Name())) 
+                next_path := filepath.Join(path,e.Name()) 
+                queue = append(queue, next_path)
+                subdir = append(subdir, next_path)
             }
         } 
+        t.cache[path] = cacheNode{r: results, subdir: subdir,depth: int64(len(de))}
     }
-    t.cache[t.filter.directory] = results
+    queue = []string{t.filter.directory}
+    for i := 0; i < len(queue); i++{
+        current := queue[i]
+        merge := t.cache[current]
+        queue = append(queue, merge.subdir...)
+    }
+    for i := len(queue)-1; 0 <= i; i--{
+        current := queue[i]
+        current_cache := t.cache[current]
+        for _,v := range current_cache.subdir{
+            current_cache.depth += t.cache[v].depth
+        }
+        t.cache[current] = current_cache
+    }
+}
+
+func (t Twine) flattenTree() []resultEntry{
+    r := make([]resultEntry,0)
+    queue := []string{t.filter.directory}
+    for 0 < len(queue){
+        current := queue[0]
+        queue = queue[1:]
+        merge := t.cache[current]
+        r = append(r, merge.r...)
+        queue = append(queue, merge.subdir...)
+    }
+    return r
+    
 }
 
 func (entry *resultEntry) formatInfo(){
