@@ -45,6 +45,9 @@ func (m ResultsList) Init() tea.Cmd{
 }
 
 func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
+    // previous := m.index
+    max_len := int64(len(m.twine.cache[m.twine.filter.directory]))
+
     switch msg := msg.(type) {
     case tea.WindowSizeMsg:
         h, v := docStyle.GetFrameSize()
@@ -59,8 +62,13 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
             m.index += int64(m.list.Paginator.PerPage) 
         case "left","h", "pgup", "b" ,"u":
             m.index -= int64(m.list.Paginator.PerPage) 
+        case "home", "g":
+            m.index = 0
+        case "end", "G":
+            m.index = max_len-1
         }
     }
+    m.list.SetItems(m.twine.SmartQuery(m.index))        
 
     m.list.Title =  fmt.Sprintf("Results %d",m.index)
     var cmd tea.Cmd
@@ -73,6 +81,6 @@ func (m ResultsList) View() string{
 }
 
 func (m* ResultsList) UpdateList(){
+    m.index = 0
     m.list.SetItems(m.twine.Query())
 }
-
