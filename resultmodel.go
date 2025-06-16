@@ -7,7 +7,6 @@ import (
 )
 
 var ( 
-    sizes = []string{"b","Kb","Mb","Gb"}
     docStyle = lipgloss.NewStyle().Border(lipgloss.HiddenBorder())
 )
 
@@ -27,7 +26,7 @@ type ResultsList struct{
 func InitResults() ResultsList{
     t := InitTwine()
     delegate := list.NewDefaultDelegate()
-    l := list.New(formatItems(t.Query()),delegate,0,0)
+    l := list.New(t.Query(),delegate,0,0)
     l.Title = "Results"
     l.KeyMap.Quit.Unbind()
     l.KeyMap.ForceQuit.Unbind()
@@ -59,6 +58,6 @@ func (m ResultsList) View() string{
 }
 
 func (m* ResultsList) UpdateList(){
-    m.list.SetItems(formatItems(m.twine.Query()))
+    m.list.SetItems(m.twine.Query())
 }
 

@@ -10,6 +10,10 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 )
 
+var (
+    sizes = []string{"b","Kb","Mb","Gb"}
+)
+
 type queryFilterPattern struct {
 	directory string
 	name      *regexp.Regexp
@@ -22,6 +26,7 @@ type queryFilterPattern struct {
 type resultEntry struct{
     fs.DirEntry
     path string 
+    item
 }
 
 type Twine struct{
@@ -39,11 +44,16 @@ func InitTwine() Twine{
     return t
 }
 
-func (t Twine) Query() []resultEntry{
+func (t Twine) Query() []list.Item{
     t.Search()
     cache := t.cache[t.filter.directory]
-    len := min(3000,len(cache))
-    return t.cache[t.filter.directory][:len]
+    len := min(10000,len(cache))
+    cache = cache[:len]
+    r := make( []list.Item, len )
+    for i := range cache{
+        r[i] = cache[i].item
+    }
+    return r
 }
 
 func (t Twine) Search(){
@@ -60,7 +70,9 @@ func (t Twine) Search(){
         de, _ := os.ReadDir(path)
         for i := range de{
             e := de[i]
-            results = append(results, resultEntry{path: path,DirEntry: e})
+            r := resultEntry{path: path,DirEntry: e}
+            r.formatInfo()
+            results = append(results, r)
             if e.IsDir() {
                 queue = append(queue, filepath.Join(path,e.Name())) 
             }
@@ -69,15 +81,7 @@ func (t Twine) Search(){
     t.cache[t.filter.directory] = results
 }
 
-func formatItems(entries []resultEntry) []list.Item{
-    items :=  make([]list.Item,len(entries))
-    for i, e := range entries{
-        items[i] = formatInfo(e)
-    } 
-    return items
-}
-
-func formatInfo(entry resultEntry) item{
+func (entry *resultEntry) formatInfo(){
     info, _ := entry.Info()
     icon := "📄"
     if entry.IsDir(){
@@ -85,10 +89,8 @@ func formatInfo(entry resultEntry) item{
     }
     title := fmt.Sprintf("%s %s %s",entry.Name(),entry.path,icon)
     desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
-    return item{
-        title: title,
-        desc: desc,
-    }
+    entry.title = title
+    entry.desc = desc
 }
 
 func formatSize(size int64) string{
