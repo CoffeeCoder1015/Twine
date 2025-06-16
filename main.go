@@ -80,7 +80,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     if m.focus == 0{
         m.inputs, cmd = m.inputs.Update(msg)
         if passThrough {
-            m.results.filter.directory = m.inputs.inputs[0].Value()
+            m.results.twine.filter.directory = m.inputs.inputs[0].Value()
             m.results, _ = m.results.Update(msg)
             m.results.UpdateList()
         }

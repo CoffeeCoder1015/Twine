@@ -24,20 +24,24 @@ func (i item) FilterValue() string { return i.title }
 
 type ResultsList struct{
     list list.Model
-    filter queryFilterPattern
+    twine Twine
 }
 
 func InitResults() ResultsList{
+    t := Twine{
+        filter: queryFilterPattern{
+            directory:".",
+        },
+    }
+
     delegate := list.NewDefaultDelegate()
-    l := list.New(_tempList("."),delegate,0,0)
+    l := list.New(formatItems(t.Query()),delegate,0,0)
     l.Title = "Results"
     l.KeyMap.Quit.Unbind()
     l.KeyMap.ForceQuit.Unbind()
 
     return ResultsList{
-        filter: queryFilterPattern{
-            directory: ".",
-        },
+        twine: t,
         list: l,
     }
 }
@@ -63,11 +67,10 @@ func (m ResultsList) View() string{
 }
 
 func (m* ResultsList) UpdateList(){
-    m.list.SetItems(_tempList(m.filter.directory))
+    m.list.SetItems(formatItems(m.twine.Query()))
 }
 
-func _tempList(dir string) []list.Item{
-    entries, _ := os.ReadDir(dir)
+func formatItems(entries []os.DirEntry) []list.Item{
     items :=  make([]list.Item,len(entries))
     for i, e := range entries{
         items[i] = formatInfo(e)
