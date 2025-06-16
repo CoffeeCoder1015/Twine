@@ -10,6 +10,7 @@ import (
 )
 
 var ( 
+    sizes = []string{"b","Kb","Mb","Gb"}
     docStyle = lipgloss.NewStyle().Border(lipgloss.HiddenBorder())
 )
 
@@ -81,9 +82,23 @@ func formatInfo(entry os.DirEntry) item{
         icon = "📁"
     }
     title := fmt.Sprintf("%s %s",entry.Name(),icon)
-    desc := fmt.Sprintf("%dB %s %s",info.Size(),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
+    desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
     return item{
         title: title,
         desc: desc,
     }
+}
+
+func formatSize(size int64) string{
+    d := int64(1)
+    index := 0
+    for i := 1; i < 4; i++{
+        temp := d*1000
+        if size > temp {
+            d = temp
+            index = i
+        }
+    }
+    formatted := float64(size) / float64(d)
+    return fmt.Sprintf("%.1f%s",formatted,sizes[index])
 }
