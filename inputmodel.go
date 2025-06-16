@@ -169,7 +169,7 @@ func (m* InputModel) ProcessInputs() {
         // Valid file size range
         case 2:
             base := input.Value()
-            if strings.Contains(base,"-"){
+            if strings.Count(base,"-") == 1{
                 split := strings.Split(base,"-")
                 if split[0] == "" && split[1] == ""{
                     // faulty range
@@ -193,7 +193,7 @@ func (m* InputModel) ProcessInputs() {
             }
         case 4:
             base := input.Value()
-            if strings.Contains(base,"-"){
+            if strings.Count(base,"-") == 1{
                 split := strings.Split(base,"-")
                 if split[0] == "" && split[1] == ""{
                     // faulty range
