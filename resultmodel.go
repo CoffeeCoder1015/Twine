@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -64,38 +62,3 @@ func (m* ResultsList) UpdateList(){
     m.list.SetItems(formatItems(m.twine.Query()))
 }
 
-func formatItems(entries []resultEntry) []list.Item{
-    items :=  make([]list.Item,len(entries))
-    for i, e := range entries{
-        items[i] = formatInfo(e)
-    } 
-    return items
-}
-
-func formatInfo(entry resultEntry) item{
-    info, _ := entry.Info()
-    icon := "📄"
-    if entry.IsDir(){
-        icon = "📁"
-    }
-    title := fmt.Sprintf("%s %s %s",entry.Name(),entry.path,icon)
-    desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
-    return item{
-        title: title,
-        desc: desc,
-    }
-}
-
-func formatSize(size int64) string{
-    d := int64(1)
-    index := 0
-    for i := 1; i < 4; i++{
-        temp := d*1000
-        if size > temp {
-            d = temp
-            index = i
-        }
-    }
-    formatted := float64(size) / float64(d)
-    return fmt.Sprintf("%.1f%s",formatted,sizes[index])
-}
