@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"regexp"
 
@@ -52,15 +53,19 @@ func (t Twine) Search(){
     }
     
     results := make([]resultEntry,0)
-    filepath.WalkDir(t.filter.directory,func(epath string, d fs.DirEntry, err error) error {
-        if err == nil {
-            results = append(results, resultEntry{
-                path: filepath.Dir(epath),
-                DirEntry: d,
-            })
-        }
-        return nil
-    })
+    queue := []string{t.filter.directory}
+    for 0 < len(queue){
+        path := queue[0]
+        queue = queue[1:]
+        de, _ := os.ReadDir(path)
+        for i := range de{
+            e := de[i]
+            results = append(results, resultEntry{path: path,DirEntry: e})
+            if e.IsDir() {
+                queue = append(queue, filepath.Join(path,e.Name())) 
+            }
+        } 
+    }
     t.cache[t.filter.directory] = results
 }
 
