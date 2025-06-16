@@ -71,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                 ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
             }
             return m, cmd
-        case tea.KeyRunes:
+        default:
             passThrough = false
         }
     }
