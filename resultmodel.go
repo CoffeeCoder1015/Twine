@@ -48,7 +48,7 @@ func (m ResultsList) Init() tea.Cmd{
 
 func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
     previous := m.index
-    max_len := m.twine.cache[m.twine.filter.directory].depth
+    max_len := int64(len(m.twine.flatCache))
 
     switch msg := msg.(type) {
     case tea.WindowSizeMsg:
@@ -110,5 +110,8 @@ func (m ResultsList) View() string{
 
 func (m* ResultsList) UpdateList(){
     m.index = 0
-    m.list.SetItems(m.twine.SmartQuery(m.index,m.sliceLength))
+    m.twine.Search()
+    m.twine.flattenTree()
+    r := m.twine.SmartQuery(m.index,m.sliceLength)
+    m.list.SetItems(r)
 }
