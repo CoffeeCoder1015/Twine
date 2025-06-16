@@ -24,12 +24,13 @@ type ResultsList struct{
     list list.Model
     twine Twine
     index int64
+    sliceLength int64
 }
 
 func InitResults() ResultsList{
     t := InitTwine()
     delegate := list.NewDefaultDelegate()
-    l := list.New(t.Query(),delegate,0,0)
+    l := list.New(t.SmartQuery(0,1000),delegate,0,0)
     l.Title = "Results"
     l.KeyMap.Quit.Unbind()
     l.KeyMap.ForceQuit.Unbind()
@@ -37,6 +38,7 @@ func InitResults() ResultsList{
     return ResultsList{
         twine: t,
         list: l,
+        sliceLength: 1000,
     }
 }
 
@@ -52,6 +54,7 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
     case tea.WindowSizeMsg:
         h, v := docStyle.GetFrameSize()
         m.list.SetSize(msg.Width-h, msg.Height-v-12)
+        m.sliceLength = int64(m.list.Paginator.PerPage)*10 
     case tea.KeyMsg:
         switch msg.String(){
         case "down", "j":
@@ -77,15 +80,14 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
             m.index = max_len-1
         }
     }
-    page_length := int64( m.list.Paginator.PerPage )*10
-    m.list.SetItems(m.twine.SmartQuery(m.index,page_length))        
+    m.list.SetItems(m.twine.SmartQuery(m.index,m.sliceLength))        
 
     var cmd tea.Cmd
     m.list, cmd = m.list.Update(msg)
 
 
     // Reset cursor position on new slice of items 
-    diff := ( m.list.Index() )-int(m.index%page_length)
+    diff := ( m.list.Index() )-int(m.index%m.sliceLength)
     action := m.list.CursorUp 
     if diff < 0{
         action = m.list.CursorDown
@@ -106,5 +108,5 @@ func (m ResultsList) View() string{
 
 func (m* ResultsList) UpdateList(){
     m.index = 0
-    m.list.SetItems(m.twine.Query())
+    m.list.SetItems(m.twine.SmartQuery(m.index,m.sliceLength))
 }

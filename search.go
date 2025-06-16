@@ -44,18 +44,6 @@ func InitTwine() Twine{
     return t
 }
 
-func (t Twine) Query() []list.Item{
-    t.Search()
-    cache := t.cache[t.filter.directory]
-    len := min(10000,len(cache))
-    cache = cache[:len]
-    r := make( []list.Item, len )
-    for i := range cache{
-        r[i] = cache[i].item
-    }
-    return r
-}
-
 func (t Twine) SmartQuery(index , width int64) []list.Item{
     t.Search()
     cache := t.cache[t.filter.directory]
