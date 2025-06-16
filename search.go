@@ -40,7 +40,9 @@ func InitTwine() Twine{
 
 func (t Twine) Query() []resultEntry{
     t.Search()
-    return t.cache[t.filter.directory]
+    cache := t.cache[t.filter.directory]
+    len := min(3000,len(cache))
+    return t.cache[t.filter.directory][:len]
 }
 
 func (t Twine) Search(){
