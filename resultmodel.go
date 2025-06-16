@@ -80,7 +80,9 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
             m.index = max_len-1
         }
     }
-    m.list.SetItems(m.twine.SmartQuery(m.index,m.sliceLength))        
+    if m.index != previous {
+        m.list.SetItems(m.twine.SmartQuery(m.index,m.sliceLength))
+    }
 
     var cmd tea.Cmd
     m.list, cmd = m.list.Update(msg)
