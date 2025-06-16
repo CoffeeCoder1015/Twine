@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -69,10 +69,21 @@ func _tempList(dir string) []list.Item{
     entries, _ := os.ReadDir(dir)
     items :=  make([]list.Item,len(entries))
     for i, e := range entries{
-        items[i] = item{
-            title: e.Name(),
-            desc: strconv.FormatBool(e.IsDir()),
-        }
+        items[i] = formatInfo(e)
     } 
     return items
+}
+
+func formatInfo(entry os.DirEntry) item{
+    info, _ := entry.Info()
+    icon := "📄"
+    if entry.IsDir(){
+        icon = "📁"
+    }
+    title := fmt.Sprintf("%s %s",entry.Name(),icon)
+    desc := fmt.Sprintf("%dB %s %s",info.Size(),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
+    return item{
+        title: title,
+        desc: desc,
+    }
 }
