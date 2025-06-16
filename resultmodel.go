@@ -45,7 +45,7 @@ func (m ResultsList) Init() tea.Cmd{
 }
 
 func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
-    // previous := m.index
+    previous := m.index
     max_len := int64(len(m.twine.cache[m.twine.filter.directory]))
 
     switch msg := msg.(type) {
@@ -68,11 +68,35 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
             m.index = max_len-1
         }
     }
-    m.list.SetItems(m.twine.SmartQuery(m.index))        
 
-    m.list.Title =  fmt.Sprintf("Results %d",m.index)
+    if m.index < 0 {
+        m.index = previous
+    }else if m.index > max_len-1{
+        m.index = max_len-1
+        if m.list.Paginator.Page+2 == m.list.Paginator.TotalPages{
+            m.index = max_len-1
+        }
+    }
+    page_length := int64( m.list.Paginator.PerPage )*10
+    m.list.SetItems(m.twine.SmartQuery(m.index,page_length))        
+
     var cmd tea.Cmd
     m.list, cmd = m.list.Update(msg)
+
+
+    // Reset cursor position on new slice of items 
+    diff := ( m.list.Index() )-int(m.index%page_length)
+    action := m.list.CursorUp 
+    if diff < 0{
+        action = m.list.CursorDown
+        diff = -diff
+    }
+    for range diff{
+        action()
+    }
+
+    m.list.Title =  fmt.Sprintf("Results %d/%d",m.index,max_len)
+
     return m, cmd
 }
 

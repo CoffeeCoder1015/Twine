@@ -56,12 +56,13 @@ func (t Twine) Query() []list.Item{
     return r
 }
 
-func (t Twine) SmartQuery(index int64) []list.Item{
+func (t Twine) SmartQuery(index , width int64) []list.Item{
     t.Search()
     cache := t.cache[t.filter.directory]
 
-    upper := min( index+500,int64( len(cache)-1 ) )
-    lower := max( index-500,0 )
+    m := index/width
+    upper := min( m*width+width,int64( len(cache) ) )
+    lower := m*width
     cache = cache[lower:upper]
 
     r := make( []list.Item, len(cache) )
