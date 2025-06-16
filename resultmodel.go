@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -28,12 +27,7 @@ type ResultsList struct{
 }
 
 func InitResults() ResultsList{
-    t := Twine{
-        filter: queryFilterPattern{
-            directory:".",
-        },
-    }
-
+    t := InitTwine()
     delegate := list.NewDefaultDelegate()
     l := list.New(formatItems(t.Query()),delegate,0,0)
     l.Title = "Results"
@@ -70,7 +64,7 @@ func (m* ResultsList) UpdateList(){
     m.list.SetItems(formatItems(m.twine.Query()))
 }
 
-func formatItems(entries []os.DirEntry) []list.Item{
+func formatItems(entries []resultEntry) []list.Item{
     items :=  make([]list.Item,len(entries))
     for i, e := range entries{
         items[i] = formatInfo(e)
@@ -78,13 +72,13 @@ func formatItems(entries []os.DirEntry) []list.Item{
     return items
 }
 
-func formatInfo(entry os.DirEntry) item{
+func formatInfo(entry resultEntry) item{
     info, _ := entry.Info()
     icon := "📄"
     if entry.IsDir(){
         icon = "📁"
     }
-    title := fmt.Sprintf("%s %s",entry.Name(),icon)
+    title := fmt.Sprintf("%s %s %s",entry.Name(),entry.path,icon)
     desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
     return item{
         title: title,
