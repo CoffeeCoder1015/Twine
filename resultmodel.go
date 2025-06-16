@@ -30,6 +30,8 @@ type ResultsList struct{
 func InitResults() ResultsList{
     t := InitTwine()
     delegate := list.NewDefaultDelegate()
+    t.Search()
+    t.flattenTree()
     l := list.New(t.SmartQuery(0,1000),delegate,0,0)
     l.Title = "Results"
     l.KeyMap.Quit.Unbind()
