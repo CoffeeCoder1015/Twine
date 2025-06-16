@@ -97,8 +97,10 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
         action = m.list.CursorDown
         diff = -diff
     }
-    for range diff{
-        action()
+    if m.list.FilterState() == list.Unfiltered {
+        for range diff{
+            action()
+        }
     }
 
     m.list.Title =  fmt.Sprintf("Results %d/%d",m.index,max_len)
