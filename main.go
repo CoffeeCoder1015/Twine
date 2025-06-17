@@ -98,7 +98,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
             newInput[i] = m.inputs.inputs[i].Value()
         }
         if len(m.inputs.inputs) == m.inputs.validCount && compareInput(oldInput,newInput){
-            m.results.twine.directory = m.inputs.inputs[0].Value()
+            path := m.inputs.inputs[0].Value()
+            m.results.twine.directory = filepath.Clean(path) + "\\"
             m.results.twine.filter = m.inputs.GetFilter()
             m.results.UpdateList(false)
         }
