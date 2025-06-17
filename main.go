@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -120,6 +122,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                 current := m.inputs.inputs[0].Value()
                 after := filepath.Dir(current)
                 m.refreshRootDirectory(after)
+            case "enter":
+                selected_index := m.results.index
+                notInFilter := m.results.list.FilterState() == list.Unfiltered
+                if notInFilter && 0 <= selected_index && int(selected_index) < len(m.results.twine.flatCache) {
+                    selected := m.results.twine.flatCache[selected_index]
+                    selected_dir := filepath.Join(selected.path,selected.Name())
+                    launchDefaultApp(selected_dir)
+                }
             }
         }
         m.results, cmd = m.results.Update(msg)
@@ -133,6 +143,30 @@ func (m *model) refreshRootDirectory(selected_dir string){
     m.inputs.inputs[0].SetCursor(len(selected_dir))
     m.results.twine.directory = m.inputs.inputs[0].Value()
     m.results.UpdateList()
+}
+
+func launchDefaultApp(path string){
+    var cmd *exec.Cmd
+
+    switch runtime.GOOS {
+    case "windows":
+        // On Windows, use "cmd /C start" to launch default app
+        cmd = exec.Command("cmd", "/C", "start", path)
+    case "darwin": // macOS
+        // On macOS, use "open"
+        cmd = exec.Command("open", path)
+    case "linux":
+        // On Linux, use "xdg-open"
+        cmd = exec.Command("xdg-open", path)
+    default:
+        fmt.Println( fmt.Errorf("unsupported operating system: %s", runtime.GOOS) )
+    }
+
+    // Use cmd.Start() to launch the application without waiting for it to close
+    err := cmd.Start()
+    if err != nil {
+        fmt.Println( fmt.Errorf("failed to launch default app for '%s' on %s: %w", path, runtime.GOOS, err) )
+    }
 }
 
 func compareInput(old_input, new_input []string) bool{
