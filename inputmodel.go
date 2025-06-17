@@ -267,7 +267,7 @@ func (m InputModel) GetFilter() []filterFunc{
     filter := []filterFunc{}
     if m.inputs[1].Value() != ".*" {
         filter = append(filter, func(e resultEntry) bool {
-            return m.nameRgex.MatchString(e.Name())
+            return m.nameRgex.MatchString(e.Name()) || m.nameRgex.MatchString(e.path)
         })
     }
 
