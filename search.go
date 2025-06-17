@@ -130,7 +130,19 @@ func (t *Twine) flattenTree() {
         current := queue[0]
         queue = queue[1:]
         merge := t.cache[current]
-        r = append(r, merge.r...)
+        for _,item := range merge.r{
+            success := true
+            for _, ff := range t.filter{
+                success = ff(item)
+                if !success {
+                   break 
+                }
+            }
+            if !success{
+                continue
+            }
+            r = append(r, item)
+        }
         queue = append(queue, merge.subdir...)
     }
     t.flatCache = r 
