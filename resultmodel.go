@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -12,6 +13,34 @@ import (
 var ( 
     docStyle = lipgloss.NewStyle().Border(lipgloss.HiddenBorder())
 )
+
+type CustomKeyMap struct{
+    SwitchPanel key.Binding
+    JumpToSelected key.Binding
+    GoToParentDir key.Binding
+    LaunchDefault key.Binding
+}
+
+func newKeyMap() *CustomKeyMap{
+    return &CustomKeyMap{
+        SwitchPanel: key.NewBinding(
+            key.WithKeys("shift+down","shift+up","alt+J","alt+K"),
+            key.WithHelp("shift + ↑/↓", "Switch panel"),
+            ),
+        JumpToSelected: key.NewBinding(
+            key.WithKeys("."),
+            key.WithHelp(".","Jump to selected item"),
+            ),
+        GoToParentDir: key.NewBinding(
+            key.WithKeys(","),
+            key.WithHelp(",","Jump to parent directory"),
+            ),
+        LaunchDefault: key.NewBinding(
+            key.WithKeys("enter"),
+            key.WithHelp("enter","Launch default application"),
+            ),
+    }
+}
 
 type item struct{
     title, desc string
@@ -37,6 +66,23 @@ func InitResults() ResultsList{
     l.Title = "Results"
     l.KeyMap.Quit.Unbind()
     l.KeyMap.ForceQuit.Unbind()
+
+    keymap := newKeyMap()
+    l.AdditionalFullHelpKeys = func() []key.Binding {
+        return []key.Binding{
+            keymap.SwitchPanel,
+            keymap.JumpToSelected,
+            keymap.GoToParentDir,
+            keymap.LaunchDefault,
+        }
+    }
+
+    l.AdditionalShortHelpKeys = func() []key.Binding {
+        return []key.Binding{
+            keymap.SwitchPanel,
+        }
+    }
+
 
     return ResultsList{
         twine: t,

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,6 +30,7 @@ type model struct{
     focus int
     inputs InputModel
     results ResultsList
+    keys *CustomKeyMap
 }
 
 func initModel() model{
@@ -36,6 +38,7 @@ func initModel() model{
         focus: 0,
         inputs: InitInput(),
         results: InitResults(),
+        keys: newKeyMap(),
     } 
 }
 
@@ -61,10 +64,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     passThrough := true
     switch msg := msg.(type) {
     case tea.KeyMsg:
-        switch msg.Type {
-        case tea.KeyCtrlC:
-            return m, tea.Quit
-        case tea.KeyShiftDown,tea.KeyShiftUp:
+        switch{
+        case key.Matches(msg,m.keys.SwitchPanel):
             if m.focus == 0{
                 m.focus = 1
                 ModelStyle = ModelStyle.Border(lipgloss.HiddenBorder())
@@ -75,6 +76,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                 ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
             }
             return m, cmd
+        }
+        switch msg.Type {
+        case tea.KeyCtrlC:
+            return m, tea.Quit
         default:
             passThrough = false
         }
@@ -104,8 +109,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         // while focused to the results panel
         switch msg := msg.(type) {
         case tea.KeyMsg:
-            switch msg.String() {
-            case ".":
+            switch {
+            case key.Matches(msg,m.keys.JumpToSelected):
                 // jump to item
                 selected_index := m.results.index
                 notInFilter := m.results.list.FilterState() == list.Unfiltered
@@ -117,12 +122,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                     }
                     m.refreshRootDirectory(selected_dir)
                 }
-            case ",":
+            case key.Matches(msg,m.keys.GoToParentDir):
                 // go up in directory
                 current := m.inputs.inputs[0].Value()
                 after := filepath.Dir(current)
                 m.refreshRootDirectory(after)
-            case "enter":
+            case key.Matches(msg,m.keys.LaunchDefault):
+                // launch default app
                 selected_index := m.results.index
                 notInFilter := m.results.list.FilterState() == list.Unfiltered
                 if notInFilter && 0 <= selected_index && int(selected_index) < len(m.results.twine.flatCache) {
