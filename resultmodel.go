@@ -115,7 +115,7 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
     switch msg := msg.(type) {
     case tea.WindowSizeMsg:
         h, v := docStyle.GetFrameSize()
-        m.list.SetSize(msg.Width-h, msg.Height-v-18)
+        m.list.SetSize(msg.Width-h, msg.Height-v-20)
         m.sliceLength = int64(m.list.Paginator.PerPage)*10 
     case tea.KeyMsg:
         // capturing keystrokes and updating global index

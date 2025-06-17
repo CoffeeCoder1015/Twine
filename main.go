@@ -49,7 +49,7 @@ func (m model) Init() tea.Cmd {
 
 // Called to render UI
 func (m model) View() string{
-    header := TitleStyle.Render(">> Twine <<")
+    header := TitleStyle.Render("🌳 Twine 🎄")
     s := header+"\n"
     s += m.inputs.View() + "\n"
     s += m.results.View()
@@ -191,7 +191,7 @@ func compareInput(old_input, new_input []string) bool{
 
 
 func main() {
-    p := tea.NewProgram(initModel())
+    p := tea.NewProgram(initModel(),tea.WithAltScreen())
     if _, err := p.Run(); err != nil{
         fmt.Printf("error has occured: %v",err)
         os.Exit(1)
