@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -98,6 +99,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         }
     }else{
         // while focused to the results panel
+        switch msg := msg.(type) {
+        case tea.KeyMsg:
+            switch msg.String() {
+            case ".":
+                selected_index := m.results.index
+                selected := m.results.twine.flatCache[selected_index]
+                if selected.IsDir(){
+                    selected_dir := filepath.Join(selected.path,selected.Name())
+                    m.results.twine.directory = selected_dir
+                    m.inputs.inputs[0].SetValue(selected_dir)
+                    m.inputs.inputs[0].SetCursor(len(selected_dir))
+                    m.results.twine.directory = m.inputs.inputs[0].Value()
+                    m.results.UpdateList()
+                }
+            }
+        }
         m.results, cmd = m.results.Update(msg)
     }
     return m,cmd
