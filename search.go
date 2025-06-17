@@ -157,12 +157,12 @@ func (t *Twine) flattenTree() {
             v, ok := <- c
             if ok{
                 r = append(r, v)
-                t.flatCache = r
             }else{
                 break
             }
         }
     }
+    t.flatCache = r
 }
 
 
