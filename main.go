@@ -78,6 +78,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
 
 
     if m.focus == 0{
+        // while focused to the search panel
         oldInput := make([]string,len(m.inputs.inputs))
         for i := range len(m.inputs.inputs){
             oldInput[i] = m.inputs.inputs[i].Value()
@@ -96,6 +97,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
             m.results, _ = m.results.Update(msg)
         }
     }else{
+        // while focused to the results panel
         m.results, cmd = m.results.Update(msg)
     }
     return m,cmd
