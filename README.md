@@ -1,6 +1,4 @@
 # Twine
-*system scanner made with python*
+Blazingly fast file explorer, like its really really really fast.
 
-# use
-- for cli use ```py tw_main.py```
-- for module use case use ```scan_py.py```
+Gives you everything at a glance, like all the subdirectories.
