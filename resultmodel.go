@@ -58,6 +58,7 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
         m.list.SetSize(msg.Width-h, msg.Height-v-18)
         m.sliceLength = int64(m.list.Paginator.PerPage)*10 
     case tea.KeyMsg:
+        // capturing keystrokes and updating global index
         switch msg.String(){
         case "down", "j":
             m.index++
@@ -74,6 +75,7 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList,tea.Cmd){
         }
     }
 
+    // manually track global index because there are too many files
     if m.index < 0 {
         m.index = previous
     }else if m.index > max_len-1{
