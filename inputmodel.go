@@ -101,9 +101,11 @@ func (m InputModel) Update(msg tea.Msg) (InputModel,tea.Cmd ){
     switch msg := msg.(type){
     case tea.KeyMsg:
         switch msg.Type{
+        // switching inputs
         case tea.KeyTab, tea.KeyShiftTab:
             s := msg.String()
 
+            // autofill input if it is empty and user leaves focus of input
             if m.inputs[m.focus].Value() == ""{
                 m.autoFill()
                 m.ProcessInputs()
@@ -115,12 +117,14 @@ func (m InputModel) Update(msg tea.Msg) (InputModel,tea.Cmd ){
                 m.focus--
             }
 
+            // make sure focus stays in bound
             if m.focus < 0{
                 m.focus = len(m.inputs)-1
             }else if m.focus >= len(m.inputs){
                 m.focus = 0
             }
 
+            // setting focused input
             cmds := make([]tea.Cmd, len(m.inputs))
             for i := range m.inputs{
                 if i == m.focus{
