@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -117,6 +118,7 @@ func (m ResultsList) View() string{
 func (m* ResultsList) UpdateList(){
     m.index = 0
     m.twine.Search()
+    m.twine.directory = filepath.Clean(m.twine.directory) + "\\"
     m.twine.flattenTree()
     r := m.twine.SmartQuery(m.index,m.sliceLength)
     m.list.SetItems(r)
