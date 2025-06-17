@@ -74,7 +74,7 @@ func (t Twine) Search(refresh bool){
                 results := make([]resultEntry,0)
                 subdir := make([]string,0)
                 path := queue[i]
-                path = filepath.Clean(path) + "\\"
+                path = formatPath(path)
                 de, _ := os.ReadDir(path)
                 for i := range de{
                     e := de[i]
@@ -83,7 +83,7 @@ func (t Twine) Search(refresh bool){
                     results = append(results, r)
                     if e.IsDir() {
                         next_path := filepath.Join(path,e.Name()) 
-                        next_path = filepath.Clean(next_path) + "\\"
+                        next_path = formatPath(next_path)
                         subdir = append(subdir, next_path)
                     }
                 } 
@@ -92,7 +92,7 @@ func (t Twine) Search(refresh bool){
         }
         for i := range l{
             recv := <-cNode
-            queue[i] = filepath.Clean(queue[i]) + "\\"
+            queue[i] = formatPath(queue[i])
             t.cache[queue[i]] = recv
             queue = append(queue, recv.subdir...)
         }
@@ -239,4 +239,9 @@ func formatSize(size int64) string{
     }
     formatted := float64(size) / float64(d)
     return fmt.Sprintf("%.1f%s",formatted,sizes[index])
+}
+
+func formatPath(path string) string{
+    p := filepath.Join(filepath.Clean(path)," ")
+    return p[:len(p)-1]
 }

@@ -139,7 +139,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                 notInFilter := m.results.list.FilterState() == list.Unfiltered
                 if notInFilter && 0 <= selected_index && int(selected_index) < len(m.results.twine.flatCache) {
                     selected := m.results.twine.flatCache[selected_index]
-                    selected_dir := filepath.Clean( selected.path )
+                    selected_dir := formatPath(selected.path)
                     if selected.IsDir(){
                         selected_dir = filepath.Join(selected.path,selected.Name())
                     }
