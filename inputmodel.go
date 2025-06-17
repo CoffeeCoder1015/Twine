@@ -250,9 +250,80 @@ func (m InputModel) View() string{
     return ModelStyle.Render(strings.Join(views,"\n"))
 }
 
-func (m InputModel) GetFilter() {
-    // SizeBound := strings.Split(m.inputs[2].Value(), "-")
-    // TimeBound := strings.Split(m.inputs[4].Value(), "-")
+func (m InputModel) GetFilter() []filterFunc{
+    filter := []filterFunc{}
+    if m.inputs[1].Value() != ".*" {
+        filter = append(filter, func(e os.DirEntry) bool {
+            return m.nameRgex.MatchString(e.Name())
+        })
+    }
+
+    size_str := m.inputs[2].Value()
+    if size_str != "-"{
+        SizeBound := strings.Split(size_str, "-")
+        lower := len( SizeBound[0] ) > 0
+        upper := len( SizeBound[1] ) > 1
+        if lower && !upper {
+            filter = append(filter, func(e os.DirEntry) bool {
+                info, _ := e.Info() 
+                return strToBytes(SizeBound[0]) < info.Size() 
+            })    
+        }else if !lower && upper{
+            filter = append(filter, func(e os.DirEntry) bool {
+                info, _ := e.Info() 
+                return  info.Size() < strToBytes(SizeBound[1])
+            })    
+        }else if lower && upper{
+            filter = append(filter, func(e os.DirEntry) bool {
+                info, _ := e.Info() 
+                return  strToBytes(SizeBound[0]) < info.Size() && info.Size() < strToBytes(SizeBound[1])
+            })    
+        }
+    }
+
+    if m.inputs[3].Value() != ".*" {
+        filter = append(filter, func(e os.DirEntry) bool {
+            info, _ := e.Info()
+            return m.modeRgex.MatchString(info.Mode().String())
+        })
+    }
+
+    time_str := m.inputs[4].Value()
+    if time_str != "-"{
+        TimeBound := strings.Split(time_str, "-")
+        lower := len( TimeBound[0] ) > 0
+        upper := len( TimeBound[1] ) > 1
+        if lower && !upper {
+            filter = append(filter, func(e os.DirEntry) bool {
+                info, _ := e.Info() 
+                return info.ModTime().After(strToTime(TimeBound[0],false))
+            })    
+        }else if !lower && upper{
+            filter = append(filter, func(e os.DirEntry) bool {
+                info, _ := e.Info() 
+                return info.ModTime().Before(strToTime(TimeBound[1],true))
+            })    
+        }else if lower && upper{
+            filter = append(filter, func(e os.DirEntry) bool {
+                info, _ := e.Info() 
+                lowerTime :=  info.ModTime().After(strToTime(TimeBound[0],false))
+                upperTime :=  info.ModTime().Before(strToTime(TimeBound[1],true))
+                return lowerTime && upperTime
+            })    
+        }
+    }
+
+    switch m.inputs[5].Value(){
+    case "dir":
+        filter = append(filter, func(e os.DirEntry) bool {
+            return e.IsDir()
+        })
+    case "file":
+        filter = append(filter, func(e os.DirEntry) bool {
+            return !e.IsDir()
+        })
+    }
+    return filter
 }
 
 // converts a size string e.g (120mb, 23.1gib, etc)
@@ -281,7 +352,7 @@ func strToBytes(rawSize string) int64{
     return int64(size)
 }
 
-func strToTime(rawTime string,isEndBound bool){
+func strToTime(rawTime string,isEndBound bool) time.Time{
     date := "2006\\01\\02"
     time_str := " 15:04:05"
     parse := date
@@ -298,4 +369,5 @@ func strToTime(rawTime string,isEndBound bool){
     if isEndBound && !has_time {
         t = t.AddDate(0,0,1)
     }
+    return t
 }
