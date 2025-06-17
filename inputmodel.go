@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -28,7 +30,7 @@ var (
         Italic(true)
 
     fileSizeMatcher = regexp.MustCompile("^\\d+(?:\\.\\d+)?(?:[kmg]i?b)$|^\\d+b$")
-    dateMatcher = regexp.MustCompile("^(?:\\d{4}-\\d{2}-\\d{2}|today)(?: \\d{2}:\\d{2}:\\d{2})?$")
+    dateMatcher = regexp.MustCompile("^(?:\\d{4}\\\\\\d{2}\\\\\\d{2}|today)(?: \\d{2}:\\d{2}:\\d{2})?$")
 )
 
 
@@ -79,7 +81,7 @@ func InitInput() InputModel{
             input.Placeholder = ".*"
         case 4:
             input.Prompt = "Mod time: "
-            input.Placeholder = "1970 00:00:00-today"
+            input.Placeholder = "1970\\01\\12 00:00:00-today"
         case 5:
             input.Prompt = "Directory/File: "
             input.Placeholder = "dir|file|all"
@@ -171,14 +173,9 @@ func (m* InputModel) ProcessInputs() {
             base := input.Value()
             if strings.Count(base,"-") == 1{
                 split := strings.Split(base,"-")
-                if split[0] == "" && split[1] == ""{
-                    // faulty range
-                    valid = false
-                }else{
-                    lowerBound := fileSizeMatcher.MatchString(split[0]) || split[0] == ""
-                    upperBound := fileSizeMatcher.MatchString(split[1]) || split[1] == ""
-                    valid = upperBound && lowerBound
-                }
+                lowerBound := fileSizeMatcher.MatchString(split[0]) || split[0] == ""
+                upperBound := fileSizeMatcher.MatchString(split[1]) || split[1] == ""
+                valid = upperBound && lowerBound
             }else{
                 // no range provided
                 valid = false
@@ -195,14 +192,9 @@ func (m* InputModel) ProcessInputs() {
             base := input.Value()
             if strings.Count(base,"-") == 1{
                 split := strings.Split(base,"-")
-                if split[0] == "" && split[1] == ""{
-                    // faulty range
-                    valid = false
-                }else{
-                    lowerBound := dateMatcher.MatchString(split[0]) || split[0] == ""
-                    upperBound := dateMatcher.MatchString(split[1]) || split[1] == ""
-                    valid = upperBound && lowerBound
-                }
+                lowerBound := dateMatcher.MatchString(split[0]) || split[0] == ""
+                upperBound := dateMatcher.MatchString(split[1]) || split[1] == ""
+                valid = upperBound && lowerBound
             }else{
                 // no range provided
                 valid = false
@@ -256,4 +248,54 @@ func (m InputModel) View() string{
     }
 
     return ModelStyle.Render(strings.Join(views,"\n"))
+}
+
+func (m InputModel) GetFilter() {
+    // SizeBound := strings.Split(m.inputs[2].Value(), "-")
+    // TimeBound := strings.Split(m.inputs[4].Value(), "-")
+}
+
+// converts a size string e.g (120mb, 23.1gib, etc)
+// into its corresponding integer size as bytes
+func strToBytes(rawSize string) int64{
+    unit, _ := regexp.Compile("[kmg]i?b|b$")
+    unit_loc := unit.FindStringIndex(rawSize)[0]
+    value := rawSize[:unit_loc]
+    unit_str := rawSize[unit_loc:]
+    
+    size, _ := strconv.ParseFloat(value,64)
+    switch unit_str{
+    case "gb":
+        size*=1000000000
+    case "mb":
+        size*=1000000
+    case "kb":
+        size*=1000
+    case "gib":
+        size*=(1<<30)
+    case "mib":
+        size*=(1<<20)
+    case "kib":
+        size*=(1<<10)
+    }
+    return int64(size)
+}
+
+func strToTime(rawTime string,isEndBound bool){
+    date := "2006\\01\\02"
+    time_str := " 15:04:05"
+    parse := date
+    has_time := strings.Count(rawTime," ") == 1
+    if has_time{
+        parse += time_str
+    }
+
+    //replacing shorthand of 'today'
+    now := time.Now()
+    rawTime = strings.Replace(rawTime,"today",now.Format(date),1)
+
+    t, _ := time.Parse(parse,rawTime)
+    if isEndBound && !has_time {
+        t = t.AddDate(0,0,1)
+    }
 }

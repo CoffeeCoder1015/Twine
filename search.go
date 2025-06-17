@@ -23,6 +23,8 @@ type queryFilterPattern struct {
 	DirFile   string
 }
 
+type filterFunc func(e os.DirEntry) bool
+
 type resultEntry struct{
     fs.DirEntry
     path string 
@@ -153,7 +155,7 @@ func (entry *resultEntry) formatInfo(){
         icon = "📁"
     }
     title := fmt.Sprintf("%s %s %s   ",entry.Name(),entry.path,icon)
-    desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006-01-02 15:04:05"),info.Mode())
+    desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006\\01\\02 15:04:05"),info.Mode())
     entry.title = title
     entry.desc = desc
 }
