@@ -127,6 +127,48 @@ func (t Twine) SearchSingle(){
 func (t *Twine) flattenTree() {
     r := make([]resultEntry,0)
     queue := []string{t.directory}
+    chanList := make([]chan resultEntry,0)
+    for 0 < len(queue){
+        current := queue[0]
+        queue = queue[1:]
+
+        merge := t.cache[current]
+        chanList = append(chanList, make(chan resultEntry,len(merge.r)))
+        go func(index int){
+            for _,item := range merge.r{
+                success := true
+                for _, ff := range t.filter{
+                    success = ff(item)
+                    if !success {
+                    break 
+                    }
+                }
+                if !success{
+                    continue
+                }
+                chanList[index] <- item
+            }
+            close(chanList[index])
+        }(len(chanList)-1)
+        queue = append(queue, merge.subdir...)
+    }
+    for _, c := range chanList{
+        for {
+            v, ok := <- c
+            if ok{
+                r = append(r, v)
+                t.flatCache = r
+            }else{
+                break
+            }
+        }
+    }
+}
+
+
+func (t *Twine) flattenTreeSingle() {
+    r := make([]resultEntry,0)
+    queue := []string{t.directory}
     for 0 < len(queue){
         current := queue[0]
         queue = queue[1:]
@@ -148,6 +190,7 @@ func (t *Twine) flattenTree() {
     }
     t.flatCache = r 
 }
+
 
 func (entry *resultEntry) formatInfo(){
     info, _ := entry.Info()
