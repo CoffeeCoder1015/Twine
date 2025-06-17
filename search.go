@@ -28,6 +28,7 @@ type cacheNode struct{
 
 type Twine struct{
     directory string
+    filter []filterFunc
     cache map[string]cacheNode
     flatCache []resultEntry
 }
@@ -154,8 +155,8 @@ func (entry *resultEntry) formatInfo(){
     if entry.IsDir(){
         icon = "📁"
     }
-    title := fmt.Sprintf("%s %s %s   ",entry.Name(),entry.path,icon)
-    desc := fmt.Sprintf("%s %s %s",formatSize(info.Size()),info.ModTime().Format("2006\\01\\02 15:04:05"),info.Mode())
+    title := fmt.Sprintf("%s %s   \n%s   ",icon,entry.Name(),entry.path)
+    desc := fmt.Sprintf("%s %s %s  ",formatSize(info.Size()),info.ModTime().Format("2006\\01\\02 15:04:05"),info.Mode())
     entry.title = title
     entry.desc = desc
 }
