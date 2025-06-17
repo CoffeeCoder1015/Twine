@@ -72,6 +72,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
     case DebounceRefresh:
         m.results.UpdateList(false)
         m.results, _ = m.results.Update(msg)
+        n := len( m.results.twine.flatCache )
+        if n > 300_000{
+            m.db.debounceDelay = time.Millisecond*200
+        }else if n > 150_000{
+            m.db.debounceDelay = time.Millisecond*150
+        }else if n > 50_000{
+            m.db.debounceDelay = time.Millisecond*70
+        }else{
+            m.db.debounceDelay = time.Millisecond*10
+        }
         return m,nil
     case tea.KeyMsg:
         switch{
