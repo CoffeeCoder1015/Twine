@@ -27,7 +27,7 @@ var (
         Foreground(lipgloss.Color("#ff3b14")).
         Italic(true)
 
-    fileSizeMatcher = regexp.MustCompile("^\\d+(?:[kmg]i?b|b)$")
+    fileSizeMatcher = regexp.MustCompile("^\\d+(?:\\.\\d+)?(?:[kmg]i?b)$|^\\d+b$")
     dateMatcher = regexp.MustCompile("^(?:\\d{4}-\\d{2}-\\d{2}|today)(?: \\d{2}:\\d{2}:\\d{2})?$")
 )
 
