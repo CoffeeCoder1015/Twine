@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -31,6 +32,7 @@ type model struct{
     inputs InputModel
     results ResultsList
     keys *CustomKeyMap
+    db *Debouncer
 }
 
 func initModel() model{
@@ -39,6 +41,7 @@ func initModel() model{
         inputs: InitInput(),
         results: InitResults(),
         keys: newKeyMap(),
+        db: NewDebouncer(time.Millisecond*150),
     } 
 }
 
@@ -63,6 +66,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
 
     passThrough := true
     switch msg := msg.(type) {
+    case DebounceLoading:
+        m.results.list.Title = "Loading..."
+        return m, nil
+    case DebounceRefresh:
+        m.results.UpdateList(false)
+        m.results, _ = m.results.Update(msg)
+        return m,nil
     case tea.KeyMsg:
         switch{
         case key.Matches(msg,m.keys.SwitchPanel):
@@ -99,11 +109,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         }
         if len(m.inputs.inputs) == m.inputs.validCount && compareInput(oldInput,newInput){
             path := m.inputs.inputs[0].Value()
-            m.results.twine.directory = filepath.Clean(path) + "\\"
+            m.results.twine.directory = path
             m.results.twine.filter = m.inputs.GetFilter()
-            m.results.UpdateList(false)
+            m.db.ScheduleUpdate(func() {
+                m.results.UpdateList(false)
+            })
         }
-        if passThrough {
+        if passThrough && !m.db.activeWorker {
             m.results, _ = m.results.Update(msg)
         }
     }else{
@@ -191,7 +203,9 @@ func compareInput(old_input, new_input []string) bool{
 
 
 func main() {
-    p := tea.NewProgram(initModel(),tea.WithAltScreen())
+    m := initModel()
+    p := tea.NewProgram(m,tea.WithAltScreen())
+    m.db.d = p
     if _, err := p.Run(); err != nil{
         fmt.Printf("error has occured: %v",err)
         os.Exit(1)
