@@ -194,13 +194,13 @@ func (t *Twine) flattenTreeSingle() {
     t.flatCache = r 
 }
 
-func (t Twine) writeResult(){
+func (t Twine) writeResult(header string){
     file, err := os.Create("result.twine.log")
     if err != nil {
        fmt.Println(err) 
         return
     }
-    logString := ""
+    logString := header 
     for _, v:= range t.flatCache{
         icon := "📄 file"
         if v.IsDir(){

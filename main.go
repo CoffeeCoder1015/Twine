@@ -137,7 +137,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                     launchDefaultApp(selected_dir)
                 }
             case key.Matches(msg,m.keys.WriteResult):
-                m.results.twine.writeResult()
+                m.results.twine.writeResult(m.inputs.SearchPattern())
             }
         }
         m.results, cmd = m.results.Update(msg)

@@ -255,6 +255,14 @@ func (m InputModel) View() string{
     return ModelStyle.Render(strings.Join(views,"\n"))
 }
 
+func (m InputModel) SearchPattern() string{
+    views := make([]string,len(m.inputs))
+    for i,v := range m.inputs{
+       views[i] = v.Prompt + " " + v.Value()
+    }
+    return ModelStyle.Render( strings.Join(views,"\n") )
+}
+
 func (m InputModel) GetFilter() []filterFunc{
     filter := []filterFunc{}
     if m.inputs[1].Value() != ".*" {
