@@ -138,6 +138,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                 }
             case key.Matches(msg,m.keys.WriteResult):
                 m.results.twine.writeResult(m.inputs.SearchPattern())
+            case key.Matches(msg,m.keys.Refresh):
+                m.results.UpdateList(true)
             }
         }
         m.results, cmd = m.results.Update(msg)

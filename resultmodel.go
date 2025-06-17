@@ -20,6 +20,7 @@ type CustomKeyMap struct{
     GoToParentDir key.Binding
     LaunchDefault key.Binding
     WriteResult key.Binding
+    Refresh key.Binding
 }
 
 func newKeyMap() *CustomKeyMap{
@@ -43,6 +44,10 @@ func newKeyMap() *CustomKeyMap{
         WriteResult: key.NewBinding(
             key.WithKeys("w"),
             key.WithHelp("w","write result to disk"),
+            ),
+        Refresh: key.NewBinding(
+            key.WithKeys("R"),
+            key.WithHelp("shift + r","refresh catelogue"),
             ),
     }
 }
@@ -79,6 +84,8 @@ func InitResults() ResultsList{
             keymap.JumpToSelected,
             keymap.GoToParentDir,
             keymap.LaunchDefault,
+            keymap.WriteResult,
+            keymap.Refresh,
         }
     }
 

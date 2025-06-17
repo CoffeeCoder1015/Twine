@@ -59,8 +59,10 @@ func (t Twine) SmartQuery(index , width int64) []list.Item{
 
 func (t Twine) Search(refresh bool){
     _,c := t.cache[t.directory]
-    if c && !refresh {
-        return
+    if !refresh{
+        if c {
+            return
+        }
     }
     
     queue := []string{t.directory}
