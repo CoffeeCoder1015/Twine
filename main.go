@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -103,21 +104,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         case tea.KeyMsg:
             switch msg.String() {
             case ".":
+                // jump to item
                 selected_index := m.results.index
-                selected := m.results.twine.flatCache[selected_index]
-                if selected.IsDir(){
-                    selected_dir := filepath.Join(selected.path,selected.Name())
-                    m.results.twine.directory = selected_dir
-                    m.inputs.inputs[0].SetValue(selected_dir)
-                    m.inputs.inputs[0].SetCursor(len(selected_dir))
-                    m.results.twine.directory = m.inputs.inputs[0].Value()
-                    m.results.UpdateList()
+                notInFilter := m.results.list.FilterState() == list.Unfiltered
+                if notInFilter && 0 <= selected_index && int(selected_index) < len(m.results.twine.flatCache) {
+                    selected := m.results.twine.flatCache[selected_index]
+                    selected_dir := filepath.Clean( selected.path )
+                    if selected.IsDir(){
+                        selected_dir = filepath.Join(selected.path,selected.Name())
+                    }
+                    m.refreshRootDirectory(selected_dir)
                 }
+            case ",":
+                // go up in directory
+                current := m.inputs.inputs[0].Value()
+                after := filepath.Dir(current)
+                m.refreshRootDirectory(after)
             }
         }
         m.results, cmd = m.results.Update(msg)
     }
     return m,cmd
+}
+
+func (m *model) refreshRootDirectory(selected_dir string){
+    m.results.twine.directory = selected_dir
+    m.inputs.inputs[0].SetValue(selected_dir)
+    m.inputs.inputs[0].SetCursor(len(selected_dir))
+    m.results.twine.directory = m.inputs.inputs[0].Value()
+    m.results.UpdateList()
 }
 
 func compareInput(old_input, new_input []string) bool{
