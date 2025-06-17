@@ -19,6 +19,7 @@ type CustomKeyMap struct{
     JumpToSelected key.Binding
     GoToParentDir key.Binding
     LaunchDefault key.Binding
+    WriteResult key.Binding
 }
 
 func newKeyMap() *CustomKeyMap{
@@ -38,6 +39,10 @@ func newKeyMap() *CustomKeyMap{
         LaunchDefault: key.NewBinding(
             key.WithKeys("enter"),
             key.WithHelp("enter","Launch default application"),
+            ),
+        WriteResult: key.NewBinding(
+            key.WithKeys("w"),
+            key.WithHelp("w","write result to disk"),
             ),
     }
 }
@@ -60,7 +65,7 @@ type ResultsList struct{
 func InitResults() ResultsList{
     t := InitTwine()
     delegate := list.NewDefaultDelegate()
-    t.Search()
+    t.Search(false)
     t.flattenTree()
     l := list.New(t.SmartQuery(0,1000),delegate,0,0)
     l.Title = "Results"
@@ -79,6 +84,7 @@ func InitResults() ResultsList{
 
     l.AdditionalShortHelpKeys = func() []key.Binding {
         return []key.Binding{
+            keymap.WriteResult,
             keymap.SwitchPanel,
         }
     }
@@ -161,9 +167,9 @@ func (m ResultsList) View() string{
     return docStyle.Render(m.list.View())
 }
 
-func (m* ResultsList) UpdateList(){
+func (m* ResultsList) UpdateList(refresh bool){
     m.index = 0
-    m.twine.Search()
+    m.twine.Search(refresh)
     m.twine.directory = filepath.Clean(m.twine.directory) + "\\"
     m.twine.flattenTree()
     r := m.twine.SmartQuery(m.index,m.sliceLength)

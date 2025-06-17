@@ -100,7 +100,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         if len(m.inputs.inputs) == m.inputs.validCount && compareInput(oldInput,newInput){
             m.results.twine.directory = m.inputs.inputs[0].Value()
             m.results.twine.filter = m.inputs.GetFilter()
-            m.results.UpdateList()
+            m.results.UpdateList(false)
         }
         if passThrough {
             m.results, _ = m.results.Update(msg)
@@ -136,6 +136,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
                     selected_dir := filepath.Join(selected.path,selected.Name())
                     launchDefaultApp(selected_dir)
                 }
+            case key.Matches(msg,m.keys.WriteResult):
+                m.results.twine.writeResult()
             }
         }
         m.results, cmd = m.results.Update(msg)
@@ -148,7 +150,7 @@ func (m *model) refreshRootDirectory(selected_dir string){
     m.inputs.inputs[0].SetValue(selected_dir)
     m.inputs.inputs[0].SetCursor(len(selected_dir))
     m.results.twine.directory = m.inputs.inputs[0].Value()
-    m.results.UpdateList()
+    m.results.UpdateList(false)
 }
 
 func launchDefaultApp(path string){

@@ -42,7 +42,7 @@ func InitTwine() Twine{
 }
 
 func (t Twine) SmartQuery(index , width int64) []list.Item{
-    t.Search()
+    t.Search(false)
     cache := t.flatCache
 
     m := index/width
@@ -57,9 +57,9 @@ func (t Twine) SmartQuery(index , width int64) []list.Item{
     return r
 }
 
-func (t Twine) Search(){
+func (t Twine) Search(refresh bool){
     _,c := t.cache[t.directory]
-    if c {
+    if c && !refresh {
         return
     }
     
@@ -192,6 +192,24 @@ func (t *Twine) flattenTreeSingle() {
         queue = append(queue, merge.subdir...)
     }
     t.flatCache = r 
+}
+
+func (t Twine) writeResult(){
+    file, err := os.Create("result.twine.log")
+    if err != nil {
+       fmt.Println(err) 
+        return
+    }
+    logString := ""
+    for _, v:= range t.flatCache{
+        icon := "📄 file"
+        if v.IsDir(){
+            icon = "📁 dir"
+        }
+        logString+=fmt.Sprintf("%s %s %s %s\n",icon,v.Name(),v.path,v.desc)
+    }
+    file.WriteString(logString)
+    file.Close()
 }
 
 
