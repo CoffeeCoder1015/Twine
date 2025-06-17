@@ -181,10 +181,11 @@ func (m *model) refreshRootDirectory(selected_dir string){
 func launchDefaultApp(path string){
     var cmd *exec.Cmd
 
+    path = fmt.Sprintf("\"%s\"",path)
     switch runtime.GOOS {
     case "windows":
         // On Windows, use "cmd /C start" to launch default app
-        cmd = exec.Command("cmd", "/C", "start", path)
+        cmd = exec.Command("powershell","Start-Process", path)
     case "darwin": // macOS
         // On macOS, use "open"
         cmd = exec.Command("open", path)
