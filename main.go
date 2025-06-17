@@ -78,19 +78,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
 
 
     if m.focus == 0{
+        oldInput := make([]string,len(m.inputs.inputs))
+        for i := range len(m.inputs.inputs){
+            oldInput[i] = m.inputs.inputs[i].Value()
+        }
         m.inputs, cmd = m.inputs.Update(msg)
+        newInput := make([]string,len(m.inputs.inputs))
+        for i := range len(m.inputs.inputs){
+            newInput[i] = m.inputs.inputs[i].Value()
+        }
+        if len(m.inputs.inputs) == m.inputs.validCount && compareInput(oldInput,newInput){
+            m.results.twine.directory = m.inputs.inputs[0].Value()
+            m.results.twine.filter = m.inputs.GetFilter()
+            m.results.UpdateList()
+        }
         if passThrough {
-            if len(m.inputs.inputs) == m.inputs.validCount {
-                m.results.twine.directory = m.inputs.inputs[0].Value()
-                m.results.twine.filter = m.inputs.GetFilter()
-                m.results.UpdateList()
-            }
             m.results, _ = m.results.Update(msg)
         }
     }else{
         m.results, cmd = m.results.Update(msg)
     }
     return m,cmd
+}
+
+func compareInput(old_input, new_input []string) bool{
+    for i,v := range old_input{
+        if new_input[i] != v{
+            return true
+        }
+    }
+    return false
 }
 
 

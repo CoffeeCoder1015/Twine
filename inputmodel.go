@@ -106,6 +106,7 @@ func (m InputModel) Update(msg tea.Msg) (InputModel,tea.Cmd ){
 
             if m.inputs[m.focus].Value() == ""{
                 m.autoFill()
+                m.ProcessInputs()
             }
 
             if s == "tab" {
