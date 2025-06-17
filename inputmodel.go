@@ -266,7 +266,7 @@ func (m InputModel) SearchPattern() string{
 func (m InputModel) GetFilter() []filterFunc{
     filter := []filterFunc{}
     if m.inputs[1].Value() != ".*" {
-        filter = append(filter, func(e os.DirEntry) bool {
+        filter = append(filter, func(e resultEntry) bool {
             return m.nameRgex.MatchString(e.Name())
         })
     }
@@ -277,17 +277,17 @@ func (m InputModel) GetFilter() []filterFunc{
         lower := len( SizeBound[0] ) > 0
         upper := len( SizeBound[1] ) > 1
         if lower && !upper {
-            filter = append(filter, func(e os.DirEntry) bool {
+            filter = append(filter, func(e resultEntry) bool {
                 info, _ := e.Info() 
                 return strToBytes(SizeBound[0]) < info.Size() 
             })    
         }else if !lower && upper{
-            filter = append(filter, func(e os.DirEntry) bool {
+            filter = append(filter, func(e resultEntry) bool {
                 info, _ := e.Info() 
                 return  info.Size() < strToBytes(SizeBound[1])
             })    
         }else if lower && upper{
-            filter = append(filter, func(e os.DirEntry) bool {
+            filter = append(filter, func(e resultEntry) bool {
                 info, _ := e.Info() 
                 return  strToBytes(SizeBound[0]) < info.Size() && info.Size() < strToBytes(SizeBound[1])
             })    
@@ -295,7 +295,7 @@ func (m InputModel) GetFilter() []filterFunc{
     }
 
     if m.inputs[3].Value() != ".*" {
-        filter = append(filter, func(e os.DirEntry) bool {
+        filter = append(filter, func(e resultEntry) bool {
             info, _ := e.Info()
             return m.modeRgex.MatchString(info.Mode().String())
         })
@@ -307,17 +307,17 @@ func (m InputModel) GetFilter() []filterFunc{
         lower := len( TimeBound[0] ) > 0
         upper := len( TimeBound[1] ) > 1
         if lower && !upper {
-            filter = append(filter, func(e os.DirEntry) bool {
+            filter = append(filter, func(e resultEntry) bool {
                 info, _ := e.Info() 
                 return info.ModTime().After(strToTime(TimeBound[0],false))
             })    
         }else if !lower && upper{
-            filter = append(filter, func(e os.DirEntry) bool {
+            filter = append(filter, func(e resultEntry) bool {
                 info, _ := e.Info() 
                 return info.ModTime().Before(strToTime(TimeBound[1],true))
             })    
         }else if lower && upper{
-            filter = append(filter, func(e os.DirEntry) bool {
+            filter = append(filter, func(e resultEntry) bool {
                 info, _ := e.Info() 
                 lowerTime :=  info.ModTime().After(strToTime(TimeBound[0],false))
                 upperTime :=  info.ModTime().Before(strToTime(TimeBound[1],true))
@@ -328,11 +328,11 @@ func (m InputModel) GetFilter() []filterFunc{
 
     switch m.inputs[5].Value(){
     case "dir":
-        filter = append(filter, func(e os.DirEntry) bool {
+        filter = append(filter, func(e resultEntry) bool {
             return e.IsDir()
         })
     case "file":
-        filter = append(filter, func(e os.DirEntry) bool {
+        filter = append(filter, func(e resultEntry) bool {
             return !e.IsDir()
         })
     }

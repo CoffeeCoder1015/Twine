@@ -13,7 +13,7 @@ var (
     sizes = []string{"b","Kb","Mb","Gb"}
 )
 
-type filterFunc func(e os.DirEntry) bool
+type filterFunc func(e resultEntry) bool
 
 type resultEntry struct{
     fs.DirEntry
