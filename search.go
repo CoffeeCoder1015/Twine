@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"github.com/charmbracelet/bubbles/list"
 )
@@ -13,15 +12,6 @@ import (
 var (
     sizes = []string{"b","Kb","Mb","Gb"}
 )
-
-type queryFilterPattern struct {
-	directory string
-	name      *regexp.Regexp
-	fileSize  string
-	mode      *regexp.Regexp
-	date      string
-	DirFile   string
-}
 
 type filterFunc func(e os.DirEntry) bool
 
@@ -37,16 +27,14 @@ type cacheNode struct{
 }
 
 type Twine struct{
-    filter queryFilterPattern
+    directory string
     cache map[string]cacheNode
     flatCache []resultEntry
 }
 
 func InitTwine() Twine{
     t := Twine{
-        filter: queryFilterPattern{
-            directory:".",
-        },
+        directory:".",
         cache: make(map[string]cacheNode),
     }
     return t
@@ -69,12 +57,12 @@ func (t Twine) SmartQuery(index , width int64) []list.Item{
 }
 
 func (t Twine) Search(){
-    _,c := t.cache[t.filter.directory]
+    _,c := t.cache[t.directory]
     if c {
         return
     }
     
-    queue := []string{t.filter.directory}
+    queue := []string{t.directory}
     cNode := make(chan cacheNode,3000)
     for 0 < len(queue){
         l := len( queue )
@@ -108,12 +96,12 @@ func (t Twine) Search(){
 }
 
 func (t Twine) SearchSingle(){
-    _,c := t.cache[t.filter.directory]
+    _,c := t.cache[t.directory]
     if c {
         return
     }
     
-    queue := []string{t.filter.directory}
+    queue := []string{t.directory}
     for 0 < len(queue){
         results := make([]resultEntry,0)
         subdir := make([]string,0)
@@ -137,7 +125,7 @@ func (t Twine) SearchSingle(){
 
 func (t *Twine) flattenTree() {
     r := make([]resultEntry,0)
-    queue := []string{t.filter.directory}
+    queue := []string{t.directory}
     for 0 < len(queue){
         current := queue[0]
         queue = queue[1:]

@@ -81,7 +81,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd){
         m.inputs, cmd = m.inputs.Update(msg)
         if passThrough {
             if len(m.inputs.inputs) == m.inputs.validCount {
-                m.results.twine.filter.directory = m.inputs.inputs[0].Value()
+                m.results.twine.directory = m.inputs.inputs[0].Value()
                 m.results.UpdateList()
             }
             m.results, _ = m.results.Update(msg)
