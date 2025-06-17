@@ -231,11 +231,11 @@ func (m* InputModel) autoFill(){
     case 1:
         input.SetValue(".*")
     case 2:
-        input.SetValue("0b-")
+        input.SetValue("-")
     case 3:
         input.SetValue(".*")
     case 4:
-        input.SetValue("-today")
+        input.SetValue("-")
     case 5:
         input.SetValue("all")
     }
