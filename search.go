@@ -202,8 +202,8 @@ func (t Twine) writeResult(header string){
        fmt.Println(err) 
         return
     }
-    logString := header 
-    for _, v:= range t.flatCache{
+    logString := header + "\n"
+   for _, v:= range t.flatCache{
         icon := "📄 file"
         if v.IsDir(){
             icon = "📁 dir"
