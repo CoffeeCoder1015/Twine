@@ -15,6 +15,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Styles definitions
 var (
 	HeaderStyle = lipgloss.NewStyle().
 			Bold(true).
@@ -27,6 +28,7 @@ var (
 			BorderForeground(lipgloss.Color("#33d483"))
 )
 
+// Model for whole application
 type model struct {
 	focus   int
 	inputs  InputModel
@@ -35,6 +37,7 @@ type model struct {
 	db      *Debouncer
 }
 
+// Call to initialize model
 func initModel() model {
 	return model{
 		focus:   0,
@@ -45,12 +48,12 @@ func initModel() model {
 	}
 }
 
+// Interface function
 func (m model) Init() tea.Cmd {
-	// Just return `nil`, which means "no I/O right now, please."
 	return textinput.Blink
 }
 
-// Called to render UI
+// Interface function: Called to render UI
 func (m model) View() string {
 	header := TitleStyle.Render("🌳 Twine 🎄")
 	s := header + "\n"
@@ -59,7 +62,7 @@ func (m model) View() string {
 	return s
 }
 
-// Handles state updates like key inputs
+// Interface function: Handles state updates like key inputs
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -168,6 +171,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// Updates the results list when the search directory changes
 func (m *model) refreshRootDirectory(selected_dir string) {
 	m.results.twine.directory = selected_dir
 	m.inputs.inputs[0].SetValue(selected_dir)
@@ -176,6 +180,7 @@ func (m *model) refreshRootDirectory(selected_dir string) {
 	m.results.UpdateList(false)
 }
 
+// Used to launch the default application for a specific file or folder
 func launchDefaultApp(path string) {
 	var cmd *exec.Cmd
 
@@ -201,6 +206,7 @@ func launchDefaultApp(path string) {
 	}
 }
 
+// Used to match all input variables
 func compareInput(old_input, new_input []string) bool {
 	for i, v := range old_input {
 		if new_input[i] != v {
