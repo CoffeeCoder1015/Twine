@@ -101,7 +101,7 @@ func flattenWorker(returnPipe chan resultEntry, results []resultEntry, filters *
 	close(returnPipe)
 }
 
-func (t Twine) constructTree(refresh bool) {
+func (t *Twine) constructTree(refresh bool) {
 	_, c := t.cache[t.directory]
 	if !refresh {
 		if c {
