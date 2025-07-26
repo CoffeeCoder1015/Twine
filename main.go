@@ -84,6 +84,18 @@ func compareInput(old_input, new_input []string) bool {
 	return false
 }
 
+func getDebounceDelay(n int) time.Duration {
+	if n > 300_000 {
+		return time.Millisecond * 200
+	} else if n > 150_000 {
+		return time.Millisecond * 150
+	} else if n > 50_000 {
+		return time.Millisecond * 70
+	} else {
+		return time.Millisecond * 10
+	}
+}
+
 // Updates the results list when the search directory changes
 func (m *model) refreshRootDirectory(selected_dir string) {
 	m.results.twine.directory = selected_dir
@@ -120,15 +132,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.results.UpdateList(false)
 		m.results, _ = m.results.Update(msg)
 		n := len(m.results.twine.flatCache)
-		if n > 300_000 {
-			m.db.debounceDelay = time.Millisecond * 200
-		} else if n > 150_000 {
-			m.db.debounceDelay = time.Millisecond * 150
-		} else if n > 50_000 {
-			m.db.debounceDelay = time.Millisecond * 70
-		} else {
-			m.db.debounceDelay = time.Millisecond * 10
-		}
+		m.db.debounceDelay = getDebounceDelay(n)
 		return m, nil
 	case tea.KeyMsg:
 		switch {
