@@ -113,6 +113,19 @@ func (m *model) refreshRootDirectory(selected_dir string) {
 	m.results.UpdateList(false)
 }
 
+// Switch focus from Search to Result and reverse
+func (m *model) switchFocus() {
+	if m.focus == focusedSearchPanel {
+		m.focus = focusedResultList
+		ModelStyle = ModelStyle.Border(lipgloss.HiddenBorder())
+		docStyle = docStyle.Border(lipgloss.NormalBorder())
+	} else {
+		m.focus = focusedSearchPanel
+		docStyle = docStyle.Border(lipgloss.HiddenBorder())
+		ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
+	}
+}
+
 // Interface function
 func (m model) Init() tea.Cmd {
 	return textinput.Blink
@@ -145,15 +158,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.SwitchPanel):
-			if m.focus == focusedSearchPanel {
-				m.focus = focusedResultList
-				ModelStyle = ModelStyle.Border(lipgloss.HiddenBorder())
-				docStyle = docStyle.Border(lipgloss.NormalBorder())
-			} else {
-				m.focus = focusedSearchPanel
-				docStyle = docStyle.Border(lipgloss.HiddenBorder())
-				ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
-			}
+			m.switchFocus()
 			return m, cmd
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
