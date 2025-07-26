@@ -95,7 +95,7 @@ func getDebounceDelay(n int) time.Duration {
 }
 
 // Updates the results list when the search directory changes
-func (m *model) refreshRootDirectory(selected_dir string) {
+func (m *model) refreshSearchDirectory(selected_dir string) {
 	m.results.twine.directory = selected_dir
 	m.inputs.inputs[0].SetValue(selected_dir)
 	m.inputs.inputs[0].SetCursor(len(selected_dir))
@@ -187,13 +187,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if selected.IsDir() {
 						selected_dir = filepath.Join(selected.path, selected.Name())
 					}
-					m.refreshRootDirectory(selected_dir)
+					m.refreshSearchDirectory(selected_dir)
 				}
 			case key.Matches(msg, m.keys.GoToParentDir):
 				// go up in directory
 				current := m.inputs.inputs[0].Value()
 				after := filepath.Dir(current)
-				m.refreshRootDirectory(after)
+				m.refreshSearchDirectory(after)
 			case key.Matches(msg, m.keys.LaunchDefault):
 				// launch default app
 				selected_index := m.results.index
