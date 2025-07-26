@@ -48,6 +48,51 @@ func initModel() model {
 	}
 }
 
+// Used to launch the default application for a specific file or folder
+func launchDefaultApp(path string) {
+	var cmd *exec.Cmd
+
+	path = fmt.Sprintf("\"%s\"", path)
+	switch runtime.GOOS {
+	case "windows":
+		// On Windows, use "cmd /C start" to launch default app
+		cmd = exec.Command("powershell", "Start-Process", path)
+	case "darwin": // macOS
+		// On macOS, use "open"
+		cmd = exec.Command("open", path)
+	case "linux":
+		// On Linux, use "xdg-open"
+		cmd = exec.Command("xdg-open", path)
+	default:
+		fmt.Println(fmt.Errorf("unsupported operating system: %s", runtime.GOOS))
+	}
+
+	// Use cmd.Start() to launch the application without waiting for it to close
+	err := cmd.Start()
+	if err != nil {
+		fmt.Println(fmt.Errorf("failed to launch default app for '%s' on %s: %w", path, runtime.GOOS, err))
+	}
+}
+
+// Used to match all input variables
+func compareInput(old_input, new_input []string) bool {
+	for i, v := range old_input {
+		if new_input[i] != v {
+			return true
+		}
+	}
+	return false
+}
+
+// Updates the results list when the search directory changes
+func (m *model) refreshRootDirectory(selected_dir string) {
+	m.results.twine.directory = selected_dir
+	m.inputs.inputs[0].SetValue(selected_dir)
+	m.inputs.inputs[0].SetCursor(len(selected_dir))
+	m.results.twine.directory = m.inputs.inputs[0].Value()
+	m.results.UpdateList(false)
+}
+
 // Interface function
 func (m model) Init() tea.Cmd {
 	return textinput.Blink
@@ -169,51 +214,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.results, cmd = m.results.Update(msg)
 	}
 	return m, cmd
-}
-
-// Updates the results list when the search directory changes
-func (m *model) refreshRootDirectory(selected_dir string) {
-	m.results.twine.directory = selected_dir
-	m.inputs.inputs[0].SetValue(selected_dir)
-	m.inputs.inputs[0].SetCursor(len(selected_dir))
-	m.results.twine.directory = m.inputs.inputs[0].Value()
-	m.results.UpdateList(false)
-}
-
-// Used to launch the default application for a specific file or folder
-func launchDefaultApp(path string) {
-	var cmd *exec.Cmd
-
-	path = fmt.Sprintf("\"%s\"", path)
-	switch runtime.GOOS {
-	case "windows":
-		// On Windows, use "cmd /C start" to launch default app
-		cmd = exec.Command("powershell", "Start-Process", path)
-	case "darwin": // macOS
-		// On macOS, use "open"
-		cmd = exec.Command("open", path)
-	case "linux":
-		// On Linux, use "xdg-open"
-		cmd = exec.Command("xdg-open", path)
-	default:
-		fmt.Println(fmt.Errorf("unsupported operating system: %s", runtime.GOOS))
-	}
-
-	// Use cmd.Start() to launch the application without waiting for it to close
-	err := cmd.Start()
-	if err != nil {
-		fmt.Println(fmt.Errorf("failed to launch default app for '%s' on %s: %w", path, runtime.GOOS, err))
-	}
-}
-
-// Used to match all input variables
-func compareInput(old_input, new_input []string) bool {
-	for i, v := range old_input {
-		if new_input[i] != v {
-			return true
-		}
-	}
-	return false
 }
 
 func main() {
