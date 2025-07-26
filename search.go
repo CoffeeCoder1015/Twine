@@ -57,6 +57,25 @@ func (t Twine) SmartQuery(index, width int64) []list.Item {
 	return r
 }
 
+func searchWorker(returnPipe chan cacheNode, path string) {
+	results := make([]resultEntry, 0)
+	subdir := make([]string, 0)
+	path = formatPath(path)
+	de, _ := os.ReadDir(path)
+	for i := range de {
+		e := de[i]
+		r := resultEntry{path: path, DirEntry: e}
+		r.formatInfo()
+		results = append(results, r)
+		if e.IsDir() {
+			next_path := filepath.Join(path, e.Name())
+			next_path = formatPath(next_path)
+			subdir = append(subdir, next_path)
+		}
+	}
+	returnPipe <- cacheNode{r: results, subdir: subdir}
+}
+
 func (t Twine) Search(refresh bool) {
 	_, c := t.cache[t.directory]
 	if !refresh {
@@ -70,31 +89,13 @@ func (t Twine) Search(refresh bool) {
 	for 0 < len(queue) {
 		l := len(queue)
 		for i := range l {
-			go func() {
-				results := make([]resultEntry, 0)
-				subdir := make([]string, 0)
-				path := queue[i]
-				path = formatPath(path)
-				de, _ := os.ReadDir(path)
-				for i := range de {
-					e := de[i]
-					r := resultEntry{path: path, DirEntry: e}
-					r.formatInfo()
-					results = append(results, r)
-					if e.IsDir() {
-						next_path := filepath.Join(path, e.Name())
-						next_path = formatPath(next_path)
-						subdir = append(subdir, next_path)
-					}
-				}
-				cNode <- cacheNode{r: results, subdir: subdir}
-			}()
+			go searchWorker(cNode, queue[i])
 		}
 		for i := range l {
-			recv := <-cNode
+			result := <-cNode
 			queue[i] = formatPath(queue[i])
-			t.cache[queue[i]] = recv
-			queue = append(queue, recv.subdir...)
+			t.cache[queue[i]] = result
+			queue = append(queue, result.subdir...)
 		}
 		queue = queue[l:]
 	}
