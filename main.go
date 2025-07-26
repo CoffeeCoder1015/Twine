@@ -28,9 +28,17 @@ var (
 			BorderForeground(lipgloss.Color("#33d483"))
 )
 
+// enum for where focus is
+type focus int
+
+const (
+	focusedSearchPanel focus = iota
+	focusedResultList
+)
+
 // Model for whole application
 type model struct {
-	focus   int
+	focus   focus
 	inputs  InputModel
 	results ResultsList
 	keys    *CustomKeyMap
@@ -40,7 +48,7 @@ type model struct {
 // Call to initialize model
 func initModel() model {
 	return model{
-		focus:   0,
+		focus:   focusedSearchPanel,
 		inputs:  InitInput(),
 		results: InitResults(),
 		keys:    newKeyMap(),
@@ -137,12 +145,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.SwitchPanel):
-			if m.focus == 0 {
-				m.focus = 1
+			if m.focus == focusedSearchPanel {
+				m.focus = focusedResultList
 				ModelStyle = ModelStyle.Border(lipgloss.HiddenBorder())
 				docStyle = docStyle.Border(lipgloss.NormalBorder())
 			} else {
-				m.focus = 0
+				m.focus = focusedSearchPanel
 				docStyle = docStyle.Border(lipgloss.HiddenBorder())
 				ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
 			}
@@ -156,7 +164,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if m.focus == 0 {
+	if m.focus == focusedSearchPanel {
 		// while focused to the search panel
 		oldInput := make([]string, len(m.inputs.inputs))
 		for i := range len(m.inputs.inputs) {
