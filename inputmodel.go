@@ -344,6 +344,21 @@ func (m *InputModel) addTimeFilter(filter *([]filterFunc)) {
 	}
 }
 
+// Checks if input is a placeholder (filter that catches everything)
+// if is not a placeholder than add to list of filters
+func (m *InputModel) addTypeFilter(filter *([]filterFunc)) {
+	switch m.inputs[5].Value() {
+	case "dir":
+		*filter = append(*filter, func(e resultEntry) bool {
+			return e.IsDir()
+		})
+	case "file":
+		*filter = append(*filter, func(e resultEntry) bool {
+			return !e.IsDir()
+		})
+	}
+}
+
 func (m InputModel) GetFilter() []filterFunc {
 	filter := []filterFunc{}
 	m.addNameFilter(&filter)
@@ -354,16 +369,8 @@ func (m InputModel) GetFilter() []filterFunc {
 
 	m.addTimeFilter(&filter)
 
-	switch m.inputs[5].Value() {
-	case "dir":
-		filter = append(filter, func(e resultEntry) bool {
-			return e.IsDir()
-		})
-	case "file":
-		filter = append(filter, func(e resultEntry) bool {
-			return !e.IsDir()
-		})
-	}
+	m.addTypeFilter(&filter)
+
 	return filter
 }
 
