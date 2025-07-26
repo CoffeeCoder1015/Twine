@@ -275,32 +275,39 @@ func (m *InputModel) addNameFilter(filter *([]filterFunc)) {
 	}
 }
 
-func (m InputModel) GetFilter() []filterFunc {
-	filter := []filterFunc{}
-	m.addNameFilter(&filter)
-
+// Checks if input is a placeholder (filter that catches everything)
+// if is not a placeholder than add to list of filters
+func (m *InputModel) addSizeFilter(filter *([]filterFunc)) {
 	size_str := m.inputs[2].Value()
 	if size_str != "-" {
 		SizeBound := strings.Split(size_str, "-")
 		lower := len(SizeBound[0]) > 0
 		upper := len(SizeBound[1]) > 1
 		if lower && !upper {
-			filter = append(filter, func(e resultEntry) bool {
+			*filter = append(*filter, func(e resultEntry) bool {
 				info, _ := e.Info()
 				return strToBytes(SizeBound[0]) < info.Size()
 			})
 		} else if !lower && upper {
-			filter = append(filter, func(e resultEntry) bool {
+			*filter = append(*filter, func(e resultEntry) bool {
 				info, _ := e.Info()
 				return info.Size() < strToBytes(SizeBound[1])
 			})
 		} else if lower && upper {
-			filter = append(filter, func(e resultEntry) bool {
+			*filter = append(*filter, func(e resultEntry) bool {
 				info, _ := e.Info()
 				return strToBytes(SizeBound[0]) < info.Size() && info.Size() < strToBytes(SizeBound[1])
 			})
 		}
 	}
+
+}
+
+func (m InputModel) GetFilter() []filterFunc {
+	filter := []filterFunc{}
+	m.addNameFilter(&filter)
+
+	m.addSizeFilter(&filter)
 
 	if m.inputs[3].Value() != ".*" {
 		filter = append(filter, func(e resultEntry) bool {
