@@ -155,9 +155,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				ModelStyle = ModelStyle.Border(lipgloss.NormalBorder())
 			}
 			return m, cmd
-		}
-		switch msg.Type {
-		case tea.KeyCtrlC:
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 		default:
 			passThrough = false

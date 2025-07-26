@@ -20,6 +20,7 @@ type CustomKeyMap struct {
 	LaunchDefault  key.Binding
 	WriteResult    key.Binding
 	Refresh        key.Binding
+	Quit           key.Binding
 }
 
 func newKeyMap() *CustomKeyMap {
@@ -42,11 +43,15 @@ func newKeyMap() *CustomKeyMap {
 		),
 		WriteResult: key.NewBinding(
 			key.WithKeys("w"),
-			key.WithHelp("w", "write result to disk"),
+			key.WithHelp("w", "Write result to disk"),
 		),
 		Refresh: key.NewBinding(
 			key.WithKeys("R"),
-			key.WithHelp("shift + r", "refresh catelogue"),
+			key.WithHelp("shift + r", "Refresh catelogue"),
+		),
+		Quit: key.NewBinding(
+			key.WithKeys("ctrl+c"),
+			key.WithHelp("ctrl+c", "Quit"),
 		),
 	}
 }
@@ -85,6 +90,7 @@ func InitResults() ResultsList {
 			keymap.LaunchDefault,
 			keymap.WriteResult,
 			keymap.Refresh,
+			keymap.Quit,
 		}
 	}
 
