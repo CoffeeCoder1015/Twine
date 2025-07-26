@@ -315,6 +315,35 @@ func (m *InputModel) addModeFilter(filter *([]filterFunc)) {
 
 }
 
+// Checks if input is a placeholder (filter that catches everything)
+// if is not a placeholder than add to list of filters
+func (m *InputModel) addTimeFilter(filter *([]filterFunc)) {
+	time_str := m.inputs[4].Value()
+	if time_str != "-" {
+		TimeBound := strings.Split(time_str, "-")
+		lower := len(TimeBound[0]) > 0
+		upper := len(TimeBound[1]) > 1
+		if lower && !upper {
+			*filter = append(*filter, func(e resultEntry) bool {
+				info, _ := e.Info()
+				return info.ModTime().After(strToTime(TimeBound[0], false))
+			})
+		} else if !lower && upper {
+			*filter = append(*filter, func(e resultEntry) bool {
+				info, _ := e.Info()
+				return info.ModTime().Before(strToTime(TimeBound[1], true))
+			})
+		} else if lower && upper {
+			*filter = append(*filter, func(e resultEntry) bool {
+				info, _ := e.Info()
+				lowerTime := info.ModTime().After(strToTime(TimeBound[0], false))
+				upperTime := info.ModTime().Before(strToTime(TimeBound[1], true))
+				return lowerTime && upperTime
+			})
+		}
+	}
+}
+
 func (m InputModel) GetFilter() []filterFunc {
 	filter := []filterFunc{}
 	m.addNameFilter(&filter)
@@ -323,30 +352,7 @@ func (m InputModel) GetFilter() []filterFunc {
 
 	m.addModeFilter(&filter)
 
-	time_str := m.inputs[4].Value()
-	if time_str != "-" {
-		TimeBound := strings.Split(time_str, "-")
-		lower := len(TimeBound[0]) > 0
-		upper := len(TimeBound[1]) > 1
-		if lower && !upper {
-			filter = append(filter, func(e resultEntry) bool {
-				info, _ := e.Info()
-				return info.ModTime().After(strToTime(TimeBound[0], false))
-			})
-		} else if !lower && upper {
-			filter = append(filter, func(e resultEntry) bool {
-				info, _ := e.Info()
-				return info.ModTime().Before(strToTime(TimeBound[1], true))
-			})
-		} else if lower && upper {
-			filter = append(filter, func(e resultEntry) bool {
-				info, _ := e.Info()
-				lowerTime := info.ModTime().After(strToTime(TimeBound[0], false))
-				upperTime := info.ModTime().Before(strToTime(TimeBound[1], true))
-				return lowerTime && upperTime
-			})
-		}
-	}
+	m.addTimeFilter(&filter)
 
 	switch m.inputs[5].Value() {
 	case "dir":
