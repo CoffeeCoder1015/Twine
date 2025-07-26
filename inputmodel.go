@@ -153,6 +153,8 @@ func (m *InputModel) UpdateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
+// Validates input values
+// Side effects, sets directly compiled regex values if they are valid
 func (m *InputModel) ProcessInputs() {
 	m.validCount = 0
 	for i := range m.inputs {
@@ -254,6 +256,7 @@ func (m InputModel) View() string {
 	return ModelStyle.Render(strings.Join(views, "\n"))
 }
 
+// Returns the rendered form of all the filter parameters
 func (m InputModel) SearchPattern() string {
 	views := make([]string, len(m.inputs))
 	for i, v := range m.inputs {
