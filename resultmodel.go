@@ -23,16 +23,13 @@ func (i item) FilterValue() string { return i.title }
 
 type ResultsList struct {
 	list        list.Model
-	twine       Twine
 	index       int64
 	sliceLength int64
+	cache       *[]resultEntry
 }
 
 func InitResults() ResultsList {
-	t := InitTwine()
 	delegate := list.NewDefaultDelegate()
-	t.constructTree(false)
-	t.flattenTree()
 	l := list.New([]list.Item{}, delegate, 0, 0)
 	l.Title = "Results"
 	l.KeyMap.Quit.Unbind()
@@ -59,7 +56,6 @@ func InitResults() ResultsList {
 	}
 
 	return ResultsList{
-		twine:       t,
 		list:        l,
 		sliceLength: 1000,
 	}
@@ -71,7 +67,7 @@ func (m ResultsList) Init() tea.Cmd {
 
 func (m ResultsList) Update(msg tea.Msg) (ResultsList, tea.Cmd) {
 	previous := m.index
-	max_len := int64(len(m.twine.flatCache))
+	max_len := int64(len(*m.cache))
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -134,17 +130,8 @@ func (m ResultsList) View() string {
 	return docStyle.Render(m.list.View())
 }
 
-func (m *ResultsList) UpdateList(refresh bool) {
-	m.index = 0
-	m.twine.constructTree(refresh)
-	m.twine.directory = formatPath(m.twine.directory)
-	m.twine.flattenTree()
-	r := m.getResultWindow(m.index, m.sliceLength)
-	m.list.SetItems(r)
-}
-
 func (m ResultsList) getResultWindow(index, width int64) []list.Item {
-	cache := m.twine.flatCache
+	cache := *m.cache
 
 	mult := index / width
 	upper := min(mult*width+width, int64(len(cache)))
