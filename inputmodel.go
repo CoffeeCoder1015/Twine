@@ -265,13 +265,19 @@ func (m InputModel) SearchPattern() string {
 	return ModelStyle.Render(strings.Join(views, "\n"))
 }
 
-func (m InputModel) GetFilter() []filterFunc {
-	filter := []filterFunc{}
+// Checks if input is a placeholder (filter that catches everything)
+// if is not a placeholder than add to list of filters
+func (m *InputModel) addNameFilter(filter *([]filterFunc)) {
 	if m.inputs[1].Value() != ".*" {
-		filter = append(filter, func(e resultEntry) bool {
+		*filter = append(*filter, func(e resultEntry) bool {
 			return m.nameRgex.MatchString(e.Name()) || m.nameRgex.MatchString(e.path)
 		})
 	}
+}
+
+func (m InputModel) GetFilter() []filterFunc {
+	filter := []filterFunc{}
+	m.addNameFilter(&filter)
 
 	size_str := m.inputs[2].Value()
 	if size_str != "-" {
