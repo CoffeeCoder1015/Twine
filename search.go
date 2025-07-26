@@ -42,7 +42,7 @@ func InitTwine() Twine {
 }
 
 func (t Twine) SmartQuery(index, width int64) []list.Item {
-	t.Search(false)
+	t.constructTree(false)
 	cache := t.flatCache
 
 	m := index / width
@@ -57,7 +57,7 @@ func (t Twine) SmartQuery(index, width int64) []list.Item {
 	return r
 }
 
-func searchWorker(returnPipe chan cacheNode, path string) {
+func constructWorker(returnPipe chan cacheNode, path string) {
 	results := make([]resultEntry, 0)
 	subdir := make([]string, 0)
 	path = formatPath(path)
@@ -93,7 +93,7 @@ func flattenWorker(returnPipe chan resultEntry, results []resultEntry, filters *
 	close(returnPipe)
 }
 
-func (t Twine) Search(refresh bool) {
+func (t Twine) constructTree(refresh bool) {
 	_, c := t.cache[t.directory]
 	if !refresh {
 		if c {
@@ -106,7 +106,7 @@ func (t Twine) Search(refresh bool) {
 	for 0 < len(queue) {
 		l := len(queue)
 		for i := range l {
-			go searchWorker(cNode, queue[i])
+			go constructWorker(cNode, queue[i])
 		}
 		for i := range l {
 			result := <-cNode

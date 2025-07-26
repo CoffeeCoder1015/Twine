@@ -31,7 +31,7 @@ type ResultsList struct {
 func InitResults() ResultsList {
 	t := InitTwine()
 	delegate := list.NewDefaultDelegate()
-	t.Search(false)
+	t.constructTree(false)
 	t.flattenTree()
 	l := list.New(t.SmartQuery(0, 1000), delegate, 0, 0)
 	l.Title = "Results"
@@ -136,7 +136,7 @@ func (m ResultsList) View() string {
 
 func (m *ResultsList) UpdateList(refresh bool) {
 	m.index = 0
-	m.twine.Search(refresh)
+	m.twine.constructTree(refresh)
 	m.twine.directory = formatPath(m.twine.directory)
 	m.twine.flattenTree()
 	r := m.twine.SmartQuery(m.index, m.sliceLength)
