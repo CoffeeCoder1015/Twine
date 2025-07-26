@@ -142,6 +142,36 @@ func (m InputModel) Update(msg tea.Msg) (InputModel, tea.Cmd) {
 	return m, cmd
 }
 
+func (m InputModel) checkedUpdate(msg tea.Msg) (InputModel, tea.Cmd, bool) {
+	oldInput := make([]string, len(m.inputs))
+	for i := range len(m.inputs) {
+		oldInput[i] = m.inputs[i].Value()
+	}
+
+	inputs, cmd := m.Update(msg)
+
+	newInput := make([]string, len(inputs.inputs))
+	for i := range len(inputs.inputs) {
+		newInput[i] = inputs.inputs[i].Value()
+	}
+
+	//validation stage
+
+	inputIsDiffernt := false
+	for i, v := range oldInput {
+		if newInput[i] != v {
+			inputIsDiffernt = true
+			break
+		}
+	}
+
+	inputIsValid := len(inputs.inputs) == inputs.validCount
+
+	inputIsGood := inputIsDiffernt && inputIsValid
+
+	return inputs, cmd, inputIsGood
+}
+
 func (m *InputModel) UpdateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
