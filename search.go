@@ -5,8 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-
-	"github.com/charmbracelet/bubbles/list"
 )
 
 var (
@@ -39,22 +37,6 @@ func InitTwine() Twine {
 		cache:     make(map[string]cacheNode),
 	}
 	return t
-}
-
-func (t Twine) SmartQuery(index, width int64) []list.Item {
-	t.constructTree(false)
-	cache := t.flatCache
-
-	m := index / width
-	upper := min(m*width+width, int64(len(cache)))
-	lower := m * width
-	cache = cache[lower:upper]
-
-	r := make([]list.Item, len(cache))
-	for i := range cache {
-		r[i] = cache[i].item
-	}
-	return r
 }
 
 func constructWorker(returnPipe chan cacheNode, path string) {

@@ -33,7 +33,7 @@ func InitResults() ResultsList {
 	delegate := list.NewDefaultDelegate()
 	t.constructTree(false)
 	t.flattenTree()
-	l := list.New(t.SmartQuery(0, 1000), delegate, 0, 0)
+	l := list.New([]list.Item{}, delegate, 0, 0)
 	l.Title = "Results"
 	l.KeyMap.Quit.Unbind()
 	l.KeyMap.ForceQuit.Unbind()
@@ -106,7 +106,7 @@ func (m ResultsList) Update(msg tea.Msg) (ResultsList, tea.Cmd) {
 		}
 	}
 	if m.index != previous {
-		m.list.SetItems(m.twine.SmartQuery(m.index, m.sliceLength))
+		m.list.SetItems(m.getResultWindow(m.index, m.sliceLength))
 	}
 
 	var cmd tea.Cmd
@@ -139,6 +139,21 @@ func (m *ResultsList) UpdateList(refresh bool) {
 	m.twine.constructTree(refresh)
 	m.twine.directory = formatPath(m.twine.directory)
 	m.twine.flattenTree()
-	r := m.twine.SmartQuery(m.index, m.sliceLength)
+	r := m.getResultWindow(m.index, m.sliceLength)
 	m.list.SetItems(r)
+}
+
+func (m ResultsList) getResultWindow(index, width int64) []list.Item {
+	cache := m.twine.flatCache
+
+	mult := index / width
+	upper := min(mult*width+width, int64(len(cache)))
+	lower := mult * width
+	cache = cache[lower:upper]
+
+	r := make([]list.Item, len(cache))
+	for i := range cache {
+		r[i] = cache[i].item
+	}
+	return r
 }
