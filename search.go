@@ -101,34 +101,6 @@ func (t Twine) Search(refresh bool) {
 	close(cNode)
 }
 
-func (t Twine) SearchSingle() {
-	_, c := t.cache[t.directory]
-	if c {
-		return
-	}
-
-	queue := []string{t.directory}
-	for 0 < len(queue) {
-		results := make([]resultEntry, 0)
-		subdir := make([]string, 0)
-		path := queue[0]
-		queue = queue[1:]
-		de, _ := os.ReadDir(path)
-		for i := range de {
-			e := de[i]
-			r := resultEntry{path: path, DirEntry: e}
-			r.formatInfo()
-			results = append(results, r)
-			if e.IsDir() {
-				next_path := filepath.Join(path, e.Name())
-				queue = append(queue, next_path)
-				subdir = append(subdir, next_path)
-			}
-		}
-		t.cache[path] = cacheNode{r: results, subdir: subdir}
-	}
-}
-
 func (t *Twine) flattenTree() {
 	r := make([]resultEntry, 0)
 	queue := []string{t.directory}
@@ -166,31 +138,6 @@ func (t *Twine) flattenTree() {
 				break
 			}
 		}
-	}
-	t.flatCache = r
-}
-
-func (t *Twine) flattenTreeSingle() {
-	r := make([]resultEntry, 0)
-	queue := []string{t.directory}
-	for 0 < len(queue) {
-		current := queue[0]
-		queue = queue[1:]
-		merge := t.cache[current]
-		for _, item := range merge.r {
-			success := true
-			for _, ff := range t.filter {
-				success = ff(item)
-				if !success {
-					break
-				}
-			}
-			if !success {
-				continue
-			}
-			r = append(r, item)
-		}
-		queue = append(queue, merge.subdir...)
 	}
 	t.flatCache = r
 }
