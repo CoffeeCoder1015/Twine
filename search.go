@@ -19,6 +19,32 @@ type resultEntry struct {
 	item
 }
 
+func (entry *resultEntry) formatInfo() {
+	info, _ := entry.Info()
+	icon := "📄"
+	if entry.IsDir() {
+		icon = "📁"
+	}
+	title := fmt.Sprintf("%s %s   \n%s   ", icon, entry.Name(), entry.path)
+	desc := fmt.Sprintf("%s %s %s  ", formatSize(info.Size()), info.ModTime().Format("2006\\01\\02 15:04:05"), info.Mode())
+	entry.title = title
+	entry.desc = desc
+}
+
+func formatSize(size int64) string {
+	d := int64(1)
+	index := 0
+	for i := 1; i < 4; i++ {
+		temp := d * 1000
+		if size > temp {
+			d = temp
+			index = i
+		}
+	}
+	formatted := float64(size) / float64(d)
+	return fmt.Sprintf("%.1f%s", formatted, sizes[index])
+}
+
 type cacheNode struct {
 	r      []resultEntry
 	subdir []string
@@ -143,32 +169,6 @@ func (t Twine) writeResult(header string) {
 	}
 	file.WriteString(logString)
 	file.Close()
-}
-
-func (entry *resultEntry) formatInfo() {
-	info, _ := entry.Info()
-	icon := "📄"
-	if entry.IsDir() {
-		icon = "📁"
-	}
-	title := fmt.Sprintf("%s %s   \n%s   ", icon, entry.Name(), entry.path)
-	desc := fmt.Sprintf("%s %s %s  ", formatSize(info.Size()), info.ModTime().Format("2006\\01\\02 15:04:05"), info.Mode())
-	entry.title = title
-	entry.desc = desc
-}
-
-func formatSize(size int64) string {
-	d := int64(1)
-	index := 0
-	for i := 1; i < 4; i++ {
-		temp := d * 1000
-		if size > temp {
-			d = temp
-			index = i
-		}
-	}
-	formatted := float64(size) / float64(d)
-	return fmt.Sprintf("%.1f%s", formatted, sizes[index])
 }
 
 func formatPath(path string) string {
