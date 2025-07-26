@@ -303,18 +303,25 @@ func (m *InputModel) addSizeFilter(filter *([]filterFunc)) {
 
 }
 
+// Checks if input is a placeholder (filter that catches everything)
+// if is not a placeholder than add to list of filters
+func (m *InputModel) addModeFilter(filter *([]filterFunc)) {
+	if m.inputs[3].Value() != ".*" {
+		*filter = append(*filter, func(e resultEntry) bool {
+			info, _ := e.Info()
+			return m.modeRgex.MatchString(info.Mode().String())
+		})
+	}
+
+}
+
 func (m InputModel) GetFilter() []filterFunc {
 	filter := []filterFunc{}
 	m.addNameFilter(&filter)
 
 	m.addSizeFilter(&filter)
 
-	if m.inputs[3].Value() != ".*" {
-		filter = append(filter, func(e resultEntry) bool {
-			info, _ := e.Info()
-			return m.modeRgex.MatchString(info.Mode().String())
-		})
-	}
+	m.addModeFilter(&filter)
 
 	time_str := m.inputs[4].Value()
 	if time_str != "-" {
