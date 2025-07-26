@@ -76,6 +76,23 @@ func searchWorker(returnPipe chan cacheNode, path string) {
 	returnPipe <- cacheNode{r: results, subdir: subdir}
 }
 
+func flattenWorker(returnPipe chan resultEntry, results []resultEntry, filters *[]filterFunc) {
+	for _, item := range results {
+		success := true
+		for _, ff := range *filters {
+			success = ff(item)
+			if !success {
+				break
+			}
+		}
+		if !success {
+			continue
+		}
+		returnPipe <- item
+	}
+	close(returnPipe)
+}
+
 func (t Twine) Search(refresh bool) {
 	_, c := t.cache[t.directory]
 	if !refresh {
@@ -112,22 +129,7 @@ func (t *Twine) flattenTree() {
 
 		merge := t.cache[current]
 		chanList = append(chanList, make(chan resultEntry, len(merge.r)))
-		go func(index int) {
-			for _, item := range merge.r {
-				success := true
-				for _, ff := range t.filter {
-					success = ff(item)
-					if !success {
-						break
-					}
-				}
-				if !success {
-					continue
-				}
-				chanList[index] <- item
-			}
-			close(chanList[index])
-		}(len(chanList) - 1)
+		go flattenWorker(chanList[len(chanList)-1], merge.r, &t.filter)
 		queue = append(queue, merge.subdir...)
 	}
 	for _, c := range chanList {
