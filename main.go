@@ -48,15 +48,11 @@ type model struct {
 
 // Call to initialize model
 func initModel() model {
-	result := InitResults()
-	t := InitTwine()
-	result.cache = &t.flatCache
-
 	return model{
 		focus:   focusedSearchPanel,
 		inputs:  InitInput(),
-		results: result,
-		twine:   t,
+		results: InitResults(),
+		twine:   InitTwine(),
 		keys:    newKeyMap(),
 		db:      NewDebouncer(time.Millisecond * 150),
 	}
