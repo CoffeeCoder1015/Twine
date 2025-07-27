@@ -155,6 +155,18 @@ func (t *Twine) flattenTree() []resultEntry {
 	return r
 }
 
+func (t *Twine) setSearchParameters(path string, filters []filterFunc) {
+	t.directory = formatPath(path)
+	if filters != nil {
+		t.filter = filters
+	}
+}
+
+func (t *Twine) Search(refresh bool) []resultEntry {
+	t.constructTree(refresh)
+	return t.flattenTree()
+}
+
 func (t Twine) writeResult(header string) {
 	file, err := os.Create("result.twine.log")
 	if err != nil {

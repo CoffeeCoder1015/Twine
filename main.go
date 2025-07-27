@@ -163,11 +163,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.inputs, cmd = newInput, cmds
 		if good {
 			path := m.inputs.inputs[0].Value()
-			m.twine.directory = formatPath(path)
-			m.twine.filter = m.inputs.GetFilter()
+			m.twine.setSearchParameters(path, m.inputs.GetFilter())
 			m.db.ScheduleUpdate(func() {
-				m.twine.constructTree(false)
-				m.results.UpdateList(m.twine.flattenTree())
+				m.results.UpdateList(m.twine.Search(false))
 			})
 		}
 		if passThrough && !m.db.activeWorker {
@@ -184,23 +182,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				notInFilter := m.results.list.FilterState() == list.Unfiltered
 				if notInFilter && 0 <= selected_index && int(selected_index) < cacheLength {
 					selected := m.twine.flatCache[selected_index]
-					selected_dir := formatPath(selected.path)
+					selected_dir := selected.path
 					if selected.IsDir() {
-						selected_dir = filepath.Join(selected.path, selected.Name())
+						selected_dir = filepath.Join(selected_dir, selected.Name())
 					}
 					m.updateSearchDirectory(selected_dir)
-					m.twine.directory = formatPath(selected_dir)
-					m.results.UpdateList(m.twine.flattenTree())
+					m.twine.setSearchParameters(selected_dir, nil)
+					m.results.UpdateList(m.twine.Search(false))
 				}
 			case key.Matches(msg, m.keys.GoToParentDir):
 				// go up in directory
 				current := m.inputs.inputs[0].Value()
-				after := filepath.Dir(current)
-				selected_dir := formatPath(after)
-				m.updateSearchDirectory(selected_dir)
-				m.twine.directory = selected_dir
-				m.twine.constructTree(false)
-				m.results.UpdateList(m.twine.flattenTree())
+				parent := filepath.Dir(current)
+				m.updateSearchDirectory(parent)
+				m.twine.setSearchParameters(parent, nil)
+				m.results.UpdateList(m.twine.Search(false))
 			case key.Matches(msg, m.keys.LaunchDefault):
 				// launch default app
 				selected_index := m.results.index
@@ -213,8 +209,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, m.keys.WriteResult):
 				m.twine.writeResult(m.inputs.SearchPattern())
 			case key.Matches(msg, m.keys.Refresh):
-				m.twine.constructTree(true)
-				m.results.UpdateList(m.twine.flattenTree())
+				m.results.UpdateList(m.twine.Search(true))
 			}
 		}
 		m.results, cmd = m.results.Update(msg)
