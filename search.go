@@ -47,6 +47,7 @@ func formatSize(size int64) string {
 }
 
 type cacheNode struct {
+	path   string
 	r      []resultEntry
 	subdir []string
 }
@@ -82,7 +83,7 @@ func constructWorker(returnPipe chan cacheNode, path string) {
 			subdir = append(subdir, next_path)
 		}
 	}
-	returnPipe <- cacheNode{r: results, subdir: subdir}
+	returnPipe <- cacheNode{path: path, r: results, subdir: subdir}
 }
 
 func flattenWorker(returnPipe chan resultEntry, results []resultEntry, filters *[]filterFunc) {
@@ -117,10 +118,9 @@ func (t *Twine) constructTree(refresh bool) {
 		for i := range l {
 			go constructWorker(cNode, queue[i])
 		}
-		for i := range l {
+		for range l {
 			result := <-cNode
-			queue[i] = formatPath(queue[i])
-			t.cache[queue[i]] = result
+			t.cache[result.path] = result
 			queue = append(queue, result.subdir...)
 		}
 		queue = queue[l:]
