@@ -19,16 +19,16 @@ func newKeyMap() *CustomKeyMap {
 			key.WithHelp("shift + ↑/↓", "Switch panel"),
 		),
 		JumpToSelected: key.NewBinding(
-			key.WithKeys("."),
-			key.WithHelp(".", "Jump to selected item"),
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "Jump to selected item"),
 		),
 		GoToParentDir: key.NewBinding(
-			key.WithKeys(","),
-			key.WithHelp(",", "Jump to parent directory"),
+			key.WithKeys("backspace"),
+			key.WithHelp("backspace", "Jump to parent directory"),
 		),
 		LaunchDefault: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "Launch default application"),
+			key.WithKeys("."),
+			key.WithHelp(".", "Launch default application"),
 		),
 		WriteResult: key.NewBinding(
 			key.WithKeys("w"),
