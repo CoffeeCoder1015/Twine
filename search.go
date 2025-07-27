@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -173,6 +174,7 @@ func (t Twine) writeResult(header string) {
 }
 
 func formatPath(path string) string {
-	p := filepath.Join(filepath.Clean(path), " ")
-	return p[:len(p)-1]
+	path = strings.Trim(path, " ")
+	p := filepath.Clean(path)
+	return p
 }
