@@ -96,13 +96,9 @@ func getDebounceDelay(n int) time.Duration {
 	}
 }
 
-// Updates the results list when the search directory changes
-func (m *model) refreshSearchDirectory(selected_dir string) {
-	m.results.twine.directory = selected_dir
-	m.inputs.inputs[0].SetValue(selected_dir)
-	m.inputs.inputs[0].SetCursor(len(selected_dir))
-	m.results.twine.directory = m.inputs.inputs[0].Value()
-	m.results.UpdateList()
+func (m *model) updateSearchDirectory(newPath string) {
+	m.inputs.inputs[0].SetValue(newPath)
+	m.inputs.inputs[0].SetCursor(len(newPath))
 }
 
 // Switch focus from Search to Result and reverse
@@ -143,7 +139,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.results.list.Title = "Loading..."
 		return m, nil
 	case DebounceRefresh:
-		m.results.UpdateList()
+		m.twine.constructTree(false)
+		m.results.UpdateList(m.twine.flattenTree())
 		m.results, _ = m.results.Update(msg)
 		n := cacheLength
 		m.db.debounceDelay = getDebounceDelay(n)
@@ -166,10 +163,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.inputs, cmd = newInput, cmds
 		if good {
 			path := m.inputs.inputs[0].Value()
-			m.results.twine.directory = path
-			m.results.twine.filter = m.inputs.GetFilter()
+			m.twine.directory = formatPath(path)
+			m.twine.filter = m.inputs.GetFilter()
 			m.db.ScheduleUpdate(func() {
-				m.results.UpdateList()
+				m.twine.constructTree(false)
+				m.results.UpdateList(m.twine.flattenTree())
 			})
 		}
 		if passThrough && !m.db.activeWorker {
@@ -185,31 +183,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selected_index := m.results.index
 				notInFilter := m.results.list.FilterState() == list.Unfiltered
 				if notInFilter && 0 <= selected_index && int(selected_index) < cacheLength {
-					selected := m.results.twine.flatCache[selected_index]
+					selected := m.twine.flatCache[selected_index]
 					selected_dir := formatPath(selected.path)
 					if selected.IsDir() {
 						selected_dir = filepath.Join(selected.path, selected.Name())
 					}
-					m.refreshSearchDirectory(selected_dir)
+					m.updateSearchDirectory(selected_dir)
+					m.twine.directory = formatPath(selected_dir)
+					m.results.UpdateList(m.twine.flattenTree())
 				}
 			case key.Matches(msg, m.keys.GoToParentDir):
 				// go up in directory
 				current := m.inputs.inputs[0].Value()
 				after := filepath.Dir(current)
-				m.refreshSearchDirectory(after)
+				selected_dir := formatPath(after)
+				m.updateSearchDirectory(selected_dir)
+				m.twine.directory = selected_dir
+				m.twine.constructTree(false)
+				m.results.UpdateList(m.twine.flattenTree())
 			case key.Matches(msg, m.keys.LaunchDefault):
 				// launch default app
 				selected_index := m.results.index
 				notInFilter := m.results.list.FilterState() == list.Unfiltered
 				if notInFilter && 0 <= selected_index && int(selected_index) < cacheLength {
-					selected := m.results.twine.flatCache[selected_index]
+					selected := m.twine.flatCache[selected_index]
 					selected_dir := filepath.Join(selected.path, selected.Name())
 					launchDefaultApp(selected_dir)
 				}
 			case key.Matches(msg, m.keys.WriteResult):
-				m.results.twine.writeResult(m.inputs.SearchPattern())
+				m.twine.writeResult(m.inputs.SearchPattern())
 			case key.Matches(msg, m.keys.Refresh):
-				m.results.UpdateList()
+				m.twine.constructTree(true)
+				m.results.UpdateList(m.twine.flattenTree())
 			}
 		}
 		m.results, cmd = m.results.Update(msg)
