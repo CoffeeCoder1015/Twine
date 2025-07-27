@@ -140,6 +140,7 @@ func (m model) View() string {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
+	cacheLength := len(m.twine.flatCache)
 	passThrough := true
 	switch msg := msg.(type) {
 	case DebounceLoading:
@@ -148,7 +149,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case DebounceRefresh:
 		m.results.UpdateList()
 		m.results, _ = m.results.Update(msg)
-		n := len(m.results.twine.flatCache)
+		n := cacheLength
 		m.db.debounceDelay = getDebounceDelay(n)
 		return m, nil
 	case tea.KeyMsg:
@@ -187,7 +188,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// jump to item
 				selected_index := m.results.index
 				notInFilter := m.results.list.FilterState() == list.Unfiltered
-				if notInFilter && 0 <= selected_index && int(selected_index) < len(m.results.twine.flatCache) {
+				if notInFilter && 0 <= selected_index && int(selected_index) < cacheLength {
 					selected := m.results.twine.flatCache[selected_index]
 					selected_dir := formatPath(selected.path)
 					if selected.IsDir() {
@@ -204,7 +205,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// launch default app
 				selected_index := m.results.index
 				notInFilter := m.results.list.FilterState() == list.Unfiltered
-				if notInFilter && 0 <= selected_index && int(selected_index) < len(m.results.twine.flatCache) {
+				if notInFilter && 0 <= selected_index && int(selected_index) < cacheLength {
 					selected := m.results.twine.flatCache[selected_index]
 					selected_dir := filepath.Join(selected.path, selected.Name())
 					launchDefaultApp(selected_dir)
