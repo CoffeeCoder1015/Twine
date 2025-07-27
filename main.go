@@ -41,16 +41,22 @@ type model struct {
 	focus   focus
 	inputs  InputModel
 	results ResultsList
+	twine   Twine
 	keys    *CustomKeyMap
 	db      *Debouncer
 }
 
 // Call to initialize model
 func initModel() model {
+	result := InitResults()
+	t := InitTwine()
+	result.cache = &t.flatCache
+
 	return model{
 		focus:   focusedSearchPanel,
 		inputs:  InitInput(),
-		results: InitResults(),
+		results: result,
+		twine:   t,
 		keys:    newKeyMap(),
 		db:      NewDebouncer(time.Millisecond * 150),
 	}
@@ -100,7 +106,7 @@ func (m *model) refreshSearchDirectory(selected_dir string) {
 	m.inputs.inputs[0].SetValue(selected_dir)
 	m.inputs.inputs[0].SetCursor(len(selected_dir))
 	m.results.twine.directory = m.inputs.inputs[0].Value()
-	m.results.UpdateList(false)
+	m.results.UpdateList()
 }
 
 // Switch focus from Search to Result and reverse
@@ -140,7 +146,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.results.list.Title = "Loading..."
 		return m, nil
 	case DebounceRefresh:
-		m.results.UpdateList(false)
+		m.results.UpdateList()
 		m.results, _ = m.results.Update(msg)
 		n := len(m.results.twine.flatCache)
 		m.db.debounceDelay = getDebounceDelay(n)
@@ -166,7 +172,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.results.twine.directory = path
 			m.results.twine.filter = m.inputs.GetFilter()
 			m.db.ScheduleUpdate(func() {
-				m.results.UpdateList(false)
+				m.results.UpdateList()
 			})
 		}
 		if passThrough && !m.db.activeWorker {
@@ -206,7 +212,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, m.keys.WriteResult):
 				m.results.twine.writeResult(m.inputs.SearchPattern())
 			case key.Matches(msg, m.keys.Refresh):
-				m.results.UpdateList(true)
+				m.results.UpdateList()
 			}
 		}
 		m.results, cmd = m.results.Update(msg)

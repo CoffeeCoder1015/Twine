@@ -144,3 +144,8 @@ func (m ResultsList) getResultWindow(index, width int64) []list.Item {
 	}
 	return r
 }
+func (m *ResultsList) UpdateList() {
+	m.index = 0
+	r := m.getResultWindow(m.index, m.sliceLength)
+	m.list.SetItems(r)
+}
