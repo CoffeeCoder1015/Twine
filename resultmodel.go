@@ -25,7 +25,7 @@ type ResultsList struct {
 	list        list.Model
 	index       int64
 	sliceLength int64
-	cache       *[]resultEntry
+	cache       []resultEntry
 }
 
 func InitResults() ResultsList {
@@ -67,7 +67,7 @@ func (m ResultsList) Init() tea.Cmd {
 
 func (m ResultsList) Update(msg tea.Msg) (ResultsList, tea.Cmd) {
 	previous := m.index
-	max_len := int64(len(*m.cache))
+	max_len := int64(len(m.cache))
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -131,7 +131,7 @@ func (m ResultsList) View() string {
 }
 
 func (m ResultsList) getResultWindow(index, width int64) []list.Item {
-	cache := *m.cache
+	cache := m.cache
 
 	mult := index / width
 	upper := min(mult*width+width, int64(len(cache)))
@@ -144,7 +144,8 @@ func (m ResultsList) getResultWindow(index, width int64) []list.Item {
 	}
 	return r
 }
-func (m *ResultsList) UpdateList() {
+func (m *ResultsList) UpdateList(newItems []resultEntry) {
+	m.cache = newItems
 	m.index = 0
 	r := m.getResultWindow(m.index, m.sliceLength)
 	m.list.SetItems(r)

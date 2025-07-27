@@ -127,7 +127,7 @@ func (t *Twine) constructTree(refresh bool) {
 	close(cNode)
 }
 
-func (t *Twine) flattenTree() {
+func (t *Twine) flattenTree() []resultEntry {
 	r := make([]resultEntry, 0)
 	queue := []string{t.directory}
 	chanList := make([]chan resultEntry, 0)
@@ -151,6 +151,7 @@ func (t *Twine) flattenTree() {
 		}
 	}
 	t.flatCache = r
+	return r
 }
 
 func (t Twine) writeResult(header string) {
